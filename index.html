@@ -3,146 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // ELITE TERMINAL</title>
+    <title>SENTINEL V5 // MARKET COLLECTIVE</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
             --neon-green: #00ff41; --neon-red: #ff3131; --neon-yellow: #f9d71c; 
-            --bg-dark: #020202; --card-bg: rgba(15, 15, 15, 0.8);
+            --bg-dark: #020202; --card-bg: rgba(20, 20, 20, 0.9);
         }
-        body { 
-            background-color: var(--bg-dark); color: #e0e0e0; 
-            font-family: 'Inter', -apple-system, sans-serif; margin: 0; overflow-x: hidden;
-        }
+        body { background-color: var(--bg-dark); color: #e0e0e0; font-family: 'Inter', sans-serif; margin: 0; }
         .app-shell { padding: 15px; max-width: 500px; margin: 0 auto; }
         
-        /* Header Superior */
-        .terminal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-left: 3px solid var(--neon-green); padding: 10px 15px;
-            background: linear-gradient(90deg, rgba(0,255,65,0.05) 0%, transparent 100%);
-            margin-bottom: 20px;
+        /* Header com a Coletividade (IBOV) */
+        .market-header {
+            background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px;
+            padding: 15px; margin-bottom: 20px; border-top: 3px solid var(--neon-green);
         }
-        .header-title h1 { font-size: 14px; letter-spacing: 2px; margin: 0; color: var(--neon-green); }
-        .header-status { text-align: right; font-size: 10px; color: #666; }
+        .ibov-value { font-size: 24px; font-weight: 800; display: block; }
+        .ibov-label { font-size: 10px; color: #666; text-transform: uppercase; }
 
-        /* Grid de Operações */
-        .op-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
-        
+        /* Lista de Ativos com Oscilação */
+        .op-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .asset-card {
             background: var(--card-bg); border: 1px solid #1a1a1a;
             border-radius: 6px; padding: 12px; display: flex; align-items: center;
-            justify-content: space-between; position: relative; overflow: hidden;
+            justify-content: space-between;
         }
-        .asset-card:active { background: #111; transform: scale(0.98); }
-        
-        .asset-info { display: flex; flex-direction: column; }
-        .asset-ticker { font-size: 16px; font-weight: 800; color: #fff; }
-        .asset-trava { font-size: 10px; color: #666; font-family: monospace; }
-
-        .asset-badge {
-            padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .badge-entra { background: rgba(0, 255, 65, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); box-shadow: 0 0 8px rgba(0,255,65,0.3); }
-        .badge-pula { background: rgba(249, 215, 28, 0.1); color: var(--neon-yellow); border: 1px solid var(--neon-yellow); }
-        .badge-nao { background: rgba(255, 49, 49, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); }
-
-        /* Área de Análise Central */
-        .analysis-vault {
-            background: #080808; border: 1px solid #111; border-radius: 12px;
-            padding: 15px; margin-bottom: 80px;
-        }
-        .vault-label { font-size: 10px; color: #444; margin-bottom: 15px; text-transform: uppercase; }
-        
-        /* News Ticker Mobile */
-        .news-overlay {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(5, 5, 5, 0.95); border-top: 1px solid var(--neon-green);
-            padding: 15px; backdrop-filter: blur(10px); z-index: 100;
-        }
-        #news-content { font-size: 12px; color: #aaa; line-height: 1.4; }
+        .oscillation-bar { height: 4px; background: #111; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .oscillation-fill { height: 100%; transition: 0.5s; }
     </style>
 </head>
 <body>
 
 <div class="app-shell">
-    <header class="terminal-header">
-        <div class="header-title">
-            <h1>SENTINEL V5</h1>
-            <span style="font-size: 8px; color: #444;">V.85 CRYPTO GHOST ADAPTIVE</span>
-        </div>
-        <div class="header-status">
-            <span id="clock" style="color: #fff;">00:00:00</span><br>
-            <span style="color: var(--neon-green)">● ONLINE</span>
-        </div>
+    <header class="market-header">
+        <span class="ibov-label">B3 // IBOVESPA (COLETIVIDADE)</span>
+        <span id="ibov-price" class="ibov-value">carregando...</span>
+        <span id="ibov-change" style="font-size: 12px;">--%</span>
     </header>
 
     <div class="op-grid" id="asset-list">
         </div>
-
-    <div class="analysis-vault">
-        <div class="vault-label">Market Opportunity Radar</div>
-        <canvas id="radarChart"></canvas>
-    </div>
-</div>
-
-<div class="news-overlay">
-    <div style="font-size: 9px; color: var(--neon-green); margin-bottom: 5px;">ACTIVE INTELLIGENCE:</div>
-    <div id="news-content">Selecione um ativo para descriptografar os dados de 24h...</div>
 </div>
 
 <script>
-    async function loadSentinel() {
-        const res = await fetch('sentinel_data.json');
-        const data = await res.json();
+    const API_KEY = 'BBA9X8Q14OFJIBRZ'; // Chave Alpha Vantage
+    const TICKETS = ['VALE3.SAO', 'PETR4.SAO', 'ITUB4.SAO', 'B3SA3.SAO', 'MGLU3.SAO'];
+
+    async function updateMarket() {
+        // Busca a coletividade (IBOV via Ticket de Referência ou Proxy)
+        const ibovRes = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBOV.SAO&apikey=${API_KEY}`);
+        const ibovData = await ibovRes.json();
+        const ibov = ibovData["Global Quote"];
+        
+        if(ibov) {
+            document.getElementById('ibov-price').innerText = parseFloat(ibov["05. price"]).toLocaleString('pt-BR');
+            const change = parseFloat(ibov["10. change percent"]);
+            document.getElementById('ibov-change').innerText = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+            document.getElementById('ibov-change').style.color = change >= 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+        }
+
         const list = document.getElementById('asset-list');
-        const news = document.getElementById('news-content');
+        list.innerHTML = ''; // Limpa para atualizar
 
-        data.forEach(item => {
-            const status = item.semaforo.toLowerCase().replace(" ", "");
-            const badgeClass = `badge-${status === 'entra' ? 'entra' : (status === 'pula' ? 'pula' : 'nao')}`;
-            
-            const card = document.createElement('div');
-            card.className = 'asset-card';
-            card.innerHTML = `
-                <div class="asset-info">
-                    <span class="asset-ticker">${item.ticket}</span>
-                    <span class="asset-trava">TRAVA: ${item.trava}</span>
-                </div>
-                <div class="asset-badge ${badgeClass}">${item.semaforo}</div>
-            `;
-            card.onclick = () => {
-                news.innerHTML = `<strong>[${item.ticket}]</strong> ${item.hist_24h}`;
-                news.style.color = '#fff';
-            };
-            list.appendChild(card);
-        });
+        for (const ticket of TICKETS) {
+            const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticket}&apikey=${API_KEY}`);
+            const data = await res.json();
+            const quote = data["Global Quote"];
 
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: data.map(d => d.ticket),
-                datasets: [{
-                    label: 'Score IPI',
-                    data: data.map(d => d.semaforo === 'ENTRA' ? 100 : (d.semaforo === 'PULA' ? 50 : 20)),
-                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
-                    borderColor: '#00ff41',
-                    borderWidth: 1,
-                    pointRadius: 2
-                }]
-            },
-            options: {
-                scales: { r: { grid: { color: '#111' }, angleLines: { color: '#111' }, pointLabels: { color: '#444', font: { size: 9 } }, ticks: { display: false }, min: 0 } },
-                plugins: { legend: { display: false } }
+            if (quote) {
+                const change = parseFloat(quote["10. change percent"]);
+                const color = change >= 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+                const card = document.createElement('div');
+                card.className = 'asset-card';
+                card.innerHTML = `
+                    <div style="width: 100%">
+                        <div style="display:flex; justify-content:space-between">
+                            <span style="font-weight:bold">${ticket.split('.')[0]}</span>
+                            <span style="color:${color}; font-family:monospace">${change.toFixed(2)}%</span>
+                        </div>
+                        <div class="oscillation-bar">
+                            <div class="oscillation-fill" style="width:${Math.abs(change) * 10}%; background:${color}"></div>
+                        </div>
+                        <small style="font-size:9px; color:#444">OSCILAÇÃO DIÁRIA</small>
+                    </div>
+                `;
+                list.appendChild(card);
             }
-        });
+        }
     }
 
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-    loadSentinel();
+    updateMarket();
+    // Atualização a cada 5 minutos para respeitar a cota da API Free
+    setInterval(updateMarket, 300000); 
 </script>
-
 </body>
+    
 </html>
