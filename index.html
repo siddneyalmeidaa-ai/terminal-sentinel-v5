@@ -3,103 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // COMMAND CENTER</title>
+    <title>SENTINEL V5 // ELITE TERMINAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --neon-green: #00ff41; --neon-red: #ff3300; --neon-yellow: #ffcc00; --bg: #050505; }
-        body { background: var(--bg); color: var(--neon-green); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--neon-green); padding-bottom: 10px; margin-bottom: 30px; }
+        :root { 
+            --neon-green: #00ff41; --neon-red: #ff3131; --neon-yellow: #f9d71c; 
+            --bg-dark: #020202; --card-bg: rgba(15, 15, 15, 0.8);
+        }
+        body { 
+            background-color: var(--bg-dark); color: #e0e0e0; 
+            font-family: 'Inter', -apple-system, sans-serif; margin: 0; overflow-x: hidden;
+        }
+        .app-shell { padding: 15px; max-width: 500px; margin: 0 auto; }
         
-        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 8px; transition: 0.3s; text-align: center; }
-        .card:hover { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0,255,65,0.2); }
-        
-        .status-entra { border-top: 4px solid var(--neon-green); }
-        .status-pula { border-top: 4px solid var(--neon-yellow); }
-        .status-nao { border-top: 4px solid var(--neon-red); }
+        /* Header Superior */
+        .terminal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 3px solid var(--neon-green); padding: 10px 15px;
+            background: linear-gradient(90deg, rgba(0,255,65,0.05) 0%, transparent 100%);
+            margin-bottom: 20px;
+        }
+        .header-title h1 { font-size: 14px; letter-spacing: 2px; margin: 0; color: var(--neon-green); }
+        .header-status { text-align: right; font-size: 10px; color: #666; }
 
-        .ticket-name { font-size: 20px; font-weight: bold; display: block; }
-        .ipi-label { font-size: 12px; text-transform: uppercase; margin-top: 10px; display: block; }
+        /* Grid de Operações */
+        .op-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
         
-        .chart-container { background: #0a0a0a; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a; }
-        .news-ticker { margin-top: 20px; background: #111; padding: 10px; border-left: 4px solid var(--neon-green); font-size: 13px; color: #00ccff; }
+        .asset-card {
+            background: var(--card-bg); border: 1px solid #1a1a1a;
+            border-radius: 6px; padding: 12px; display: flex; align-items: center;
+            justify-content: space-between; position: relative; overflow: hidden;
+        }
+        .asset-card:active { background: #111; transform: scale(0.98); }
+        
+        .asset-info { display: flex; flex-direction: column; }
+        .asset-ticker { font-size: 16px; font-weight: 800; color: #fff; }
+        .asset-trava { font-size: 10px; color: #666; font-family: monospace; }
+
+        .asset-badge {
+            padding: 4px 10px; border-radius: 3px; font-size: 10px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .badge-entra { background: rgba(0, 255, 65, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); box-shadow: 0 0 8px rgba(0,255,65,0.3); }
+        .badge-pula { background: rgba(249, 215, 28, 0.1); color: var(--neon-yellow); border: 1px solid var(--neon-yellow); }
+        .badge-nao { background: rgba(255, 49, 49, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); }
+
+        /* Área de Análise Central */
+        .analysis-vault {
+            background: #080808; border: 1px solid #111; border-radius: 12px;
+            padding: 15px; margin-bottom: 80px;
+        }
+        .vault-label { font-size: 10px; color: #444; margin-bottom: 15px; text-transform: uppercase; }
+        
+        /* News Ticker Mobile */
+        .news-overlay {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(5, 5, 5, 0.95); border-top: 1px solid var(--neon-green);
+            padding: 15px; backdrop-filter: blur(10px); z-index: 100;
+        }
+        #news-content { font-size: 12px; color: #aaa; line-height: 1.4; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div>
-        <h2 style="margin:0;">SENTINEL V5 // OPERATIVE DASHBOARD</h2>
-        <small>SYNC: ALPHA_VANTAGE_REALTIME</small>
-    </div>
-    <div style="text-align: right;">
-        <span id="clock">17:31:00</span><br>
-        <small>STATUS: BLINDADO</small>
+<div class="app-shell">
+    <header class="terminal-header">
+        <div class="header-title">
+            <h1>SENTINEL V5</h1>
+            <span style="font-size: 8px; color: #444;">V.85 CRYPTO GHOST ADAPTIVE</span>
+        </div>
+        <div class="header-status">
+            <span id="clock" style="color: #fff;">00:00:00</span><br>
+            <span style="color: var(--neon-green)">● ONLINE</span>
+        </div>
+    </header>
+
+    <div class="op-grid" id="asset-list">
+        </div>
+
+    <div class="analysis-vault">
+        <div class="vault-label">Market Opportunity Radar</div>
+        <canvas id="radarChart"></canvas>
     </div>
 </div>
 
-<div class="container">
-    <div class="grid-cards" id="cards-container">
-        </div>
-
-    <div class="chart-container">
-        <canvas id="sentinelChart"></canvas>
-        <div id="active-news" class="news-ticker">Selecione um ativo para ver o histórico 24h...</div>
-    </div>
+<div class="news-overlay">
+    <div style="font-size: 9px; color: var(--neon-green); margin-bottom: 5px;">ACTIVE INTELLIGENCE:</div>
+    <div id="news-content">Selecione um ativo para descriptografar os dados de 24h...</div>
 </div>
 
 <script>
-    async function initDashboard() {
-        const response = await fetch('sentinel_data.json');
-        const data = await response.json();
-        
-        const cardsCont = document.getElementById('cards-container');
-        const newsTicker = document.getElementById('active-news');
-        
-        // Criar Cards
+    async function loadSentinel() {
+        const res = await fetch('sentinel_data.json');
+        const data = await res.json();
+        const list = document.getElementById('asset-list');
+        const news = document.getElementById('news-content');
+
         data.forEach(item => {
-            const statusClass = item.semaforo.toLowerCase().replace(" ", "-");
+            const status = item.semaforo.toLowerCase().replace(" ", "");
+            const badgeClass = `badge-${status === 'entra' ? 'entra' : (status === 'pula' ? 'pula' : 'nao')}`;
+            
             const card = document.createElement('div');
-            card.className = `card status-${statusClass}`;
+            card.className = 'asset-card';
             card.innerHTML = `
-                <span class="ticket-name">${item.ticket}</span>
-                <small>${item.trava} TRAVA</small>
-                <span class="ipi-label">${item.semaforo}</span>
+                <div class="asset-info">
+                    <span class="asset-ticker">${item.ticket}</span>
+                    <span class="asset-trava">TRAVA: ${item.trava}</span>
+                </div>
+                <div class="asset-badge ${badgeClass}">${item.semaforo}</div>
             `;
             card.onclick = () => {
-                newsTicker.innerHTML = `<strong>${item.ticket} NEWS:</strong> ${item.hist_24h}`;
+                news.innerHTML = `<strong>[${item.ticket}]</strong> ${item.hist_24h}`;
+                news.style.color = '#fff';
             };
-            cardsCont.appendChild(card);
+            list.appendChild(card);
         });
 
-        // Criar Gráfico de Radar
-        const ctx = document.getElementById('sentinelChart').getContext('2d');
+        const ctx = document.getElementById('radarChart').getContext('2d');
         new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: data.map(i => i.ticket),
+                labels: data.map(d => d.ticket),
                 datasets: [{
-                    label: 'Pontuação de Oportunidade (IPI)',
-                    data: data.map(i => i.semaforo === 'ENTRA' ? 10 : (i.semaforo === 'PULA' ? 5 : 2)),
-                    fill: true,
+                    label: 'Score IPI',
+                    data: data.map(d => d.semaforo === 'ENTRA' ? 100 : (d.semaforo === 'PULA' ? 50 : 20)),
                     backgroundColor: 'rgba(0, 255, 65, 0.1)',
                     borderColor: '#00ff41',
-                    pointBackgroundColor: '#00ff41'
+                    borderWidth: 1,
+                    pointRadius: 2
                 }]
             },
             options: {
-                scales: { r: { angleLines: { color: '#222' }, grid: { color: '#222' }, pointLabels: { color: '#00ff41' }, ticks: { display: false } } },
-                plugins: { legend: { labels: { color: '#00ff41' } } }
+                scales: { r: { grid: { color: '#111' }, angleLines: { color: '#111' }, pointLabels: { color: '#444', font: { size: 9 } }, ticks: { display: false }, min: 0 } },
+                plugins: { legend: { display: false } }
             }
         });
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-    initDashboard();
+    loadSentinel();
 </script>
 
 </body>
-
 </html>
