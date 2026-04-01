@@ -1,5 +1,4 @@
-// SENTINEL V5 // CORE DATABASE & RENDER
-const DATABASE = [
+[
   {
     "ticket": "VALE3",
     "gatilhos": "Minério China / Infraestrutura",
@@ -18,35 +17,4 @@ const DATABASE = [
     "trava": "-75%",
     "api_key": "BBA9X8Q14OFJIBRZ"
   }
-  // Adicione os outros ativos seguindo este padrão exato
-];
-
-function renderSentinel() {
-    const container = document.getElementById('app');
-    if (!container) return; // Trava de segurança para não quebrar o código
-    
-    container.innerHTML = ''; 
-
-    DATABASE.forEach(item => {
-        const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: '---', c: '0.00'};
-        const cor = item.semaforo === "ENTRA" ? "#00ff41" : (item.semaforo === "PULA" ? "#f9d71c" : "#ff3131");
-
-        container.innerHTML += `
-            <div class="card" style="border-left: 4px solid ${cor}; background: #0a0a0a; margin-bottom: 8px; padding: 12px; border-radius: 6px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <b style="color: #fff;">${item.ticket}</b>
-                    <span style="font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 3px; background:${cor}20; color:${cor}; border: 1px solid ${cor}">${item.semaforo}</span>
-                </div>
-                <div style="font-size: 18px; margin: 8px 0; color: #eee;">R$ ${cache.p} <small style="font-size: 10px; color: #888;">(${cache.c}%)</small></div>
-                <div style="font-size: 10px; color: #666; font-style: italic;">● ${item.hist_24h}</div>
-                <div style="font-size: 9px; margin-top: 8px; color: #444; border-top: 1px solid #1a1a1a; padding-top: 5px;">
-                    12M: ${item.perf_12m} | GATILHO: ${item.gatilhos} | TRAVA: ${item.trava}
-                </div>
-            </div>
-        `;
-    });
-}
-
-// Inicia a renderização
-renderSentinel
-();
+]
