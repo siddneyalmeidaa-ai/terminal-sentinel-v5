@@ -1,0 +1,112 @@
+[
+  {
+    "ticket": "VALE3",
+    "gatilhos": "Minério China / Infraestrutura",
+    "hist_24h": "[01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.",
+    "perf_12m": "-14.20%",
+    "alerta_div": "RECUPERAÇÃO",
+    "risco_pol": "BAIXO",
+    "semaforo": "ENTRA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "PETR4",
+    "gatilhos": "Brent / Política / Dividendos",
+    "hist_24h": "[31/03] Brent US$ 84; Incerteza sobre nova diretoria.",
+    "perf_12m": "+28.50%",
+    "alerta_div": "TOPO HISTÓRICO",
+    "risco_pol": "ALTO",
+    "semaforo": "PULA",
+    "trava": "-75%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "ITUB4",
+    "gatilhos": "SELIC / Inadimplência",
+    "hist_24h": "[01/04] Relatório indica lucros resilientes no setor bancário.",
+    "perf_12m": "+18.40%",
+    "alerta_div": "ESTÁVEL",
+    "risco_pol": "BAIXO",
+    "semaforo": "ENTRA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "BBAS3",
+    "gatilhos": "Agro / Eficiência Operacional",
+    "hist_24h": "[31/03] Liberação de crédito recorde para Plano Safra.",
+    "perf_12m": "+34.20%",
+    "alerta_div": "CRESCIMENTO",
+    "risco_pol": "MÉDIO",
+    "semaforo": "ENTRA",
+    "trava": "-60%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "ABEV3",
+    "gatilhos": "Custos Alumínio / Consumo",
+    "hist_24h": "[01/04] Queda no custo de insumos metálicos em Londres.",
+    "perf_12m": "-6.80%",
+    "alerta_div": "BAIXA MARGEM",
+    "risco_pol": "BAIXO",
+    "semaforo": "PULA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "B3SA3",
+    "gatilhos": "Volume Negociado / Juros",
+    "hist_24h": "[31/03] Queda de 5% no volume financeiro médio semanal.",
+    "perf_12m": "-11.30%",
+    "alerta_div": "BAIXA LIQUIDEZ",
+    "risco_pol": "BAIXO",
+    "semaforo": "PULA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "ELET3",
+    "gatilhos": "Tarifas / Reservatórios",
+    "hist_24h": "[01/04] ONS confirma níveis estáveis de reservatórios.",
+    "perf_12m": "+12.60%",
+    "alerta_div": "ESTÁVEL",
+    "risco_pol": "MÉDIO",
+    "semaforo": "ENTRA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "WEGE3",
+    "gatilhos": "Dólar / Indústria Global",
+    "hist_24h": "[01/04] Aumento de demanda industrial na Europa e EUA.",
+    "perf_12m": "+22.10%",
+    "alerta_div": "VALORIZAÇÃO",
+    "risco_pol": "BAIXO",
+    "semaforo": "ENTRA",
+    "trava": "-50%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "RENT3",
+    "gatilhos": "SELIC / Renovação de Frota",
+    "hist_24h": "[31/03] Venda de frotas corporativas sobe 3%.",
+    "perf_12m": "-15.40%",
+    "alerta_div": "RECUPERAÇÃO",
+    "risco_pol": "MÉDIO",
+    "semaforo": "PULA",
+    "trava": "-65%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "MGLU3",
+    "gatilhos": "Juros / Consumo Varejo",
+    "hist_24h": "[01/04] Expectativa de manutenção da SELIC trava varejo.",
+    "perf_12m": "-42.10%",
+    "alerta_div": "ALTO RISCO",
+    "risco_pol": "BAIXO",
+    "semaforo": "NÃO ENTRA",
+    "trava": "-80%",
+    "api_key": "BBA9X8Q14OFJIBRZ"
+  }
+]
