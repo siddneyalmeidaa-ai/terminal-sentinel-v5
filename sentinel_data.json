@@ -2,19 +2,31 @@
   {
     "ticket": "VALE3",
     "gatilhos": "Minério China / Infraestrutura",
-    "hist_24h": "[01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.",
+    "hist_24h": "[01/04] Minério subiu 1.2% em Dalian",
     "perf_12m": "-14.20%",
     "semaforo": "ENTRA",
     "trava": "-50%",
-    "api_key": "BBA9X8Q14OFJIBRZ"
+    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
+    "api_key_news": "BBA9X8Q14OFJIBRZ"
   },
   {
     "ticket": "PETR4",
     "gatilhos": "Brent / Política / Dividendos",
-    "hist_24h": "[31/03] Brent US$ 84; Incerteza sobre nova diretoria.",
+    "hist_24h": "[31/03] Brent US$ 84; Incerteza diretoria",
     "perf_12m": "+28.50%",
     "semaforo": "PULA",
     "trava": "-75%",
-    "api_key": "BBA9X8Q14OFJIBRZ"
+    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
+    "api_key_news": "BBA9X8Q14OFJIBRZ"
+  },
+  {
+    "ticket": "ITUB4",
+    "gatilhos": "SELIC / Inadimplência",
+    "hist_24h": "[01/04] Relatório indica lucros resilientes",
+    "perf_12m": "+18.40%",
+    "semaforo": "ENTRA",
+    "trava": "-50%",
+    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
+    "api_key_news": "BBA9X8Q14OFJIBRZ"
   }
 ]
