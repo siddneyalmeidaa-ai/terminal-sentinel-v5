@@ -2,79 +2,96 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SENTINEL V6.1 // SYDNEY</title>
+    <title>SENTINEL V6.2 // BYPASS PROXY</title>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
         .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; }
         .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; border-left: 6px solid #00ff41; margin-bottom: 15px; }
-        .ticket { font-size: 14px; color: #888; letter-spacing: 1px; }
+        .ticket { font-size: 14px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
         .price { font-size: 38px; font-weight: bold; margin: 10px 0; }
-        .osc { font-size: 18px; font-weight: bold; }
-        #debug-log { font-family: monospace; color: #444; font-size: 11px; margin-top: 30px; }
+        .osc { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .news-box { background: #111; padding: 12px; border-radius: 8px; font-size: 12px; color: #aaa; border-top: 1px solid #222; line-height: 1.4; }
+        .label-news { color: #00ff41; font-size: 10px; font-weight: bold; display: block; margin-bottom: 5px; }
+        #log { font-family: monospace; color: #444; font-size: 11px; margin-top: 30px; border-top: 1px solid #111; padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL V6.1 // ATIVO</span>
+    <span>SENTINEL V6.2 // PROXY ACTIVE</span>
     <span id="clock">20:25:00</span>
 </div>
 
 <div id="app">
-    <div class="card" style="border-left-color: #333;">Iniciando varredura de mercado...</div>
+    <div class="card" style="border-left-color: #333;">Iniciando túnel de conexão...</div>
 </div>
 
-<div id="debug-log">SISTEMA: Aguardando resposta da Alpha Vantage...</div>
+<div id="log">SISTEMA: Aguardando autorização de domínio...</div>
 
 <script>
-    // INVERSÃO DE CHAVES
-    const KEY_COTACAO = "BBA9X8Q14OFJIBRZ"; // Chave 2 (Nova)
-    const KEY_NEWS = "3YfY2Nvp75kG9ANMx4vrDx";    // Chave 1 (Original)
+    // CONFIGURAÇÃO DE CHAVES
+    const KEY_PRICE = "BBA9X8Q14OFJIBRZ"; 
+    const KEY_NEWS = "3YfY2Nvp75kG9ANMx4vrDx";
+    const PROXY_URL = "https://api.allorigins.win/get?url=";
 
-    async function processar() {
+    async function fetchData(url) {
+        const response = await fetch(PROXY_URL + encodeURIComponent(url));
+        const json = await response.json();
+        return JSON.parse(json.contents);
+    }
+
+    async function executar() {
         const app = document.getElementById('app');
-        const log = document.getElementById('debug-log');
-        
+        const log = document.getElementById('log');
+        const TICKET = "PETR4";
+
         try {
-            log.innerText = "Sincronizando PETR4 via Chave BBA9X...";
-            
-            const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=PETR4.SAO&apikey=${KEY_COTACAO}`;
-            const res = await fetch(url);
-            const data = await res.json();
+            log.innerText = `STATUS: Consultando ${TICKET} via Túnel Proxy...`;
 
-            if (data["Note"]) {
-                app.innerHTML = '<div class="card" style="border-color:#f9d71c">LIMITE EXCEDIDO: A API pediu 60 segundos de espera.</div>';
-                log.innerText = "STATUS: Aguardando cooldown.";
-                return;
-            }
+            // 1. CONSULTA DE COTAÇÃO [cite: 2026-02-28]
+            const urlPrice = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${TICKET}.SAO&apikey=${KEY_PRICE}`;
+            const dataP = await fetchData(urlPrice);
 
-            if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
-                const g = data["Global Quote"];
-                const p = parseFloat(g["05. price"]).toFixed(2);
-                const o = parseFloat(g["10. change percent"].replace('%','')).toFixed(2);
-                const cor = o >= 0 ? "#00ff41" : "#ff3131";
+            // 2. CONSULTA DE NOTÍCIAS
+            const urlNews = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${TICKET}&apikey=${KEY_NEWS}`;
+            const dataN = await fetchData(urlNews);
+
+            if (dataP["Global Quote"]) {
+                const g = dataP["Global Quote"];
+                const preco = parseFloat(g["05. price"]).toFixed(2);
+                const osc = parseFloat(g["10. change percent"].replace('%','')).toFixed(2);
+                const cor = osc >= 0 ? "#00ff41" : "#ff3131";
+                
+                // Pega o resumo da notícia
+                const resumo = dataN.feed && dataN.feed[0] ? dataN.feed[0].summary : "Sem alertas de notícias no momento.";
 
                 app.innerHTML = `
                     <div class="card" style="border-left-color: ${cor}">
-                        <div class="ticket">PETR4.SAO</div>
-                        <div class="price">R$ ${p}</div>
-                        <div class="osc" style="color: ${cor}">${o}%</div>
+                        <div class="ticket">${TICKET}.SAO</div>
+                        <div class="price">R$ ${preco}</div>
+                        <div class="osc" style="color: ${cor}">${osc}%</div>
+                        <div class="news-box">
+                            <span class="label-news">GATILHO DE MERCADO:</span>
+                            ${resumo.substring(0, 180)}...
+                        </div>
                     </div>
                 `;
-                log.innerText = "SISTEMA: Cotação atualizada com sucesso.";
+                log.innerText = "SISTEMA: Dados integrados com sucesso via Proxy.";
+            } else if (dataP["Note"]) {
+                app.innerHTML = '<div class="card" style="border-color:orange">API em Cooldown (Aguarde 60s).</div>';
+                log.innerText = "AVISO: Limite de frequência atingido.";
             } else {
-                app.innerHTML = '<div class="card" style="border-color:red">ERRO: Chave ainda não autorizada para este domínio.</div>';
-                log.innerText = "DETALHE: Verifique se a chave foi colada sem espaços.";
+                app.innerHTML = '<div class="card" style="border-color:red">Erro na validação dos dados da API.</div>';
             }
         } catch (e) {
-            app.innerHTML = '<div class="card" style="border-color:red">FALHA DE CONEXÃO.</div>';
+            app.innerHTML = '<div class="card" style="border-color:red">Falha Crítica no Túnel de Conexão.</div>';
             log.innerText = "ERRO: " + e.message;
         }
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(processar, 1000);
+    setTimeout(executar, 1500);
 </script>
-</body>
-    
+</bo
+    dy>
 </html>
