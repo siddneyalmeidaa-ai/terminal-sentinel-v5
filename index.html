@@ -1,100 +1,86 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // INTEL</title>
+    <title>SENTINEL V5 // BLINDAGEM JSON</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
-        body { background: var(--bg); color: #eee; font-family: sans-serif; margin: 0; padding: 10px; padding-bottom: 80px; }
-        .header { border-bottom: 2px solid var(--green); padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .asset-card { background: var(--card); border: 1px solid #1a1a1a; padding: 12px; margin-bottom: 6px; border-radius: 6px; }
-        .flex-row { display: flex; justify-content: space-between; align-items: center; }
-        .news-box { font-size: 9px; color: #666; margin-top: 8px; border-top: 1px style dotted #222; padding-top: 5px; font-style: italic; }
-        .badge { font-size: 10px; font-weight: bold; padding: 4px 8px; border: 1px solid; border-radius: 3px; min-width: 60px; text-align: center; }
-        .active-intel-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; border-top: 2px solid var(--green); padding: 10px; font-size: 10px; z-index: 100; box-sizing: border-box; }
+        body { background: var(--bg); color: #eee; font-family: sans-serif; margin: 0; padding: 10px; }
+        .header { border-bottom: 2px solid var(--green); padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .asset-card { background: var(--card); border: 1px solid #1a1a1a; padding: 12px; margin-bottom: 6px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 10px; font-weight: bold; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
+        .time-info { font-size: 8px; color: #444; margin-top: 3px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span><b>SENTINEL V5</b> // ACTIVE INTEL</span>
-    <span id="clock" style="color:var(--green)">19:15:00</span>
+    <span><b>SENTINEL V5</b> // BASE BLINDADA</span>
+    <span id="clock" style="color:var(--green)">00:00:00</span>
 </div>
 
-<div style="height: 160px; margin-bottom: 10px;"><canvas id="radar"></canvas></div>
-<div id="list"></div>
-
-<div class="active-intel-footer">
-    <b style="color:var(--green)">GLOBAL INTEL:</b> 
-    <span id="footer-news">Sincronizando gatilhos de impacto...</span>
-</div>
+<div id="asset-list"></div>
 
 <script>
     const API_KEY = 'BBA9X8Q14OFJIBRZ';
-    // Dados com as notícias de impacto direto por ticket
     const TICKETS = [
-        {t:'VALE3.SAO', s:'ENTRA', v:90, n:'Minério subiu 1.2% em Dalian; Estímulos civis na China.'}, 
-        {t:'PETR4.SAO', s:'PULA', v:40, n:'Incerteza sobre política de dividendos e nova gestão.'}, 
-        {t:'ITUB4.SAO', s:'ENTRA', v:85, n:'Setor bancário resiliente com Selic alta mantida.'}, 
-        {t:'BBAS3.SAO', s:'ENTRA', v:88, n:'Resultado trimestral acima do esperado; crédito agro forte.'}, 
-        {t:'ABEV3.SAO', s:'PULA', v:30, n:'Aumento de custos logísticos impacta margens brutas.'}, 
-        {t:'B3SA3.SAO', s:'PULA', v:35, n:'Menor volume de negociações no varejo reduz receitas.'}, 
-        {t:'ELET3.SAO', s:'ENTRA', v:82, n:'Privatização gera eficiência operacional; rating elevado.'}, 
-        {t:'WEGE3.SAO', s:'ENTRA', v:80, n:'Forte demanda por energia renovável e motores elétricos.'}, 
-        {t:'RENT3.SAO', s:'PULA', v:45, n:'Depreciação de frotas usadas pressiona o lucro líquido.'}, 
-        {t:'MGLU3.SAO', s:'NÃO ENTRA', v:15, n:'Inflação de serviços trava retomada do consumo de bens.'}
+        {t:'VALE3.SAO', s:'ENTRA', p:'72.45', n:'Minério estável em Dalian.'},
+        {t:'PETR4.SAO', s:'PULA', p:'38.12', n:'Incerteza sobre política de dividendos.'},
+        {t:'ITUB4.SAO', s:'ENTRA', p:'32.90', n:'Setor bancário com Selic alta.'},
+        {t:'BBAS3.SAO', s:'ENTRA', p:'54.20', n:'Crédito agro impulsiona resultados.'},
+        {t:'ABEV3.SAO', s:'PULA', p:'11.80', n:'Custos de insumos em análise.'}
     ];
 
     function render() {
-        const container = document.getElementById('list');
-        container.innerHTML = '';
+        const list = document.getElementById('asset-list');
+        list.innerHTML = '';
         TICKETS.forEach(item => {
-            const cache = JSON.parse(localStorage.getItem(item.t)) || {price: '---', change: '0.00'};
-            const color = item.s === 'ENTRA' ? 'var(--green)' : (item.s === 'PULA' ? 'var(--yellow)' : 'var(--red)');
-            container.innerHTML += `
+            // Busca do banco local. Se não tiver nada, usa o valor padrão do JSON
+            const saved = JSON.parse(localStorage.getItem(item.t)) || {price: item.p, change: '0.00', time: 'DADO INICIAL'};
+            const color = item.s === 'ENTRA' ? 'var(--green)' : 'var(--yellow)';
+            
+            list.innerHTML += `
                 <div class="asset-card">
-                    <div class="flex-row">
-                        <div>
-                            <b>${item.t.split('.')[0]}</b>
-                            <div style="font-size:11px; color:#888">R$ ${cache.price} (${cache.change}%)</div>
-                        </div>
-                        <div class="badge" style="color:${color}; border-color:${color}">${item.s}</div>
+                    <div>
+                        <b>${item.t.split('.')[0]}</b>
+                        <div style="font-size:11px; color:#888">R$ ${saved.price} (${saved.change}%)</div>
+                        <div class="time-info">Sincronizado: ${saved.time}</div>
                     </div>
-                    <div class="news-box">● ${item.n}</div>
+                    <div class="badge" style="color:${color}; border-color:${color}">${item.s}</div>
                 </div>`;
         });
     }
 
-    async function sync() {
+    async function updateData() {
+        const now = new Date().toLocaleTimeString('pt-BR');
         for (let i = 0; i < TICKETS.length; i++) {
-            if (i === 5) await new Promise(r => setTimeout(r, 61000));
             try {
                 const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${TICKETS[i].t}&apikey=${API_KEY}`);
-                const d = await res.json();
-                if (d["Global Quote"]) {
-                    const q = d["Global Quote"];
-                    localStorage.setItem(TICKETS[i].t, JSON.stringify({
+                const data = await res.json();
+                if (data["Global Quote"]) {
+                    const q = data["Global Quote"];
+                    const info = {
                         price: parseFloat(q["05. price"]).toFixed(2),
-                        change: parseFloat(q["10. change percent"]).toFixed(2)
-                    }));
-                    document.getElementById('footer-news').innerText = `[${TICKETS[i].t.split('.')[0]}] ${TICKETS[i].n}`;
+                        change: parseFloat(q["10. change percent"]).toFixed(2),
+                        time: now
+                    };
+                    localStorage.setItem(TICKETS[i].t, JSON.stringify(info));
                     render();
                 }
-            } catch (e) { console.log("API Limit"); }
+                // Espera 30s entre cada ticket para não travar a API gratuita
+                await new Promise(r => setTimeout(r, 30000));
+            } catch (e) { console.warn("API Offline - Mantendo Cache"); }
         }
     }
 
-    new Chart(document.getElementById('radar'), {
-        type: 'radar',
-        data: { labels: TICKETS.map(x => x.t.split('.')[0]), datasets: [{ data: TICKETS.map(x => x.v), backgroundColor: 'rgba(0,255,65,0.1)', borderColor: '#00ff41', borderWidth: 1 }] },
-        options: { scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, ticks: { display: false } } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }
-    });
-
-    render(); sync();
+    // Relógio e Ciclo de 10 minutos
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+    render(); // Carrega o que está salvo na hora
+    updateData(); // Inicia a atualização lenta em paralelo
+    setInterval(updateData, 600000); // Repete a cada 10 minutos
 </script>
 </body>
-
-</html>
+<
+    /html>
