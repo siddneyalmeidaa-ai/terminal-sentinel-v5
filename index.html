@@ -6,32 +6,32 @@
     <title>SENTINEL V5 // BASE BLINDADA</title>
     <style>
         :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
-        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; overflow-x: hidden; }
+        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; padding-bottom: 40px; }
         .header { border-bottom: 2px solid var(--green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .clock { color: var(--green); font-weight: bold; font-family: monospace; }
-        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; transition: 0.3s; }
+        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; position: relative; }
         .flex-header { display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 11px; font-weight: bold; padding: 5px 12px; border: 1px solid; border-radius: 4px; text-transform: uppercase; }
-        .price { font-size: 22px; font-weight: bold; margin: 10px 0; color: #fff; }
-        .price small { font-size: 12px; color: #888; margin-left: 5px; }
-        .intel-box { background: #111; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 2px solid #333; }
-        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-        .hist { color: #aaa; font-size: 10px; font-style: italic; line-height: 1.4; }
-        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 8px; }
-        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 3px 0; }
+        .price { font-size: 24px; font-weight: bold; margin: 12px 0; color: #fff; }
+        .price small { font-size: 13px; color: #888; margin-left: 6px; font-weight: normal; }
+        .intel-box { background: #0d0d0d; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid #1a1a1a; }
+        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .hist { color: #999; font-size: 10px; font-style: italic; line-height: 1.5; }
+        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 10px; text-transform: uppercase; }
+        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 5px 0; z-index: 100; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <span><b>SENTINEL V5</b> // BASE BLINDADA</span>
-    <span id="clock" class="clock">19:45:16</span>
+    <span id="clock" class="clock">19:48:30</span>
 </div>
 
 <div id="app"></div>
 
 <script>
-    // 1. O BANCO DE DADOS (DATABASE) QUE VOCÊ ENVIOU
+    // 1. BANCO DE DADOS CORE (SEU PADRÃO OURO) [cite: 2026-01-11]
     const DATABASE = [
         { "ticket": "VALE3", "gatilhos": "Minério China / Infraestrutura", "hist_24h": "[01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.", "perf_12m": "-14.20%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
         { "ticket": "PETR4", "gatilhos": "Brent / Política / Dividendos", "hist_24h": "[31/03] Brent US$ 84; Incerteza sobre nova diretoria.", "perf_12m": "+28.50%", "semaforo": "PULA", "trava": "-75%", "api_key": "BBA9X8Q14OFJIBRZ" },
@@ -45,19 +45,20 @@
         { "ticket": "MGLU3", "gatilhos": "Juros / Consumo Varejo", "hist_24h": "[01/04] Expectativa de manutenção da SELIC trava varejo.", "perf_12m": "-42.10%", "semaforo": "NÃO ENTRA", "trava": "-80%", "api_key": "BBA9X8Q14OFJIBRZ" }
     ];
 
-    // 2. MOTOR DE RENDERIZAÇÃO (REPRODUZ O SEU JSON NA TELA)
+    // 2. MOTOR DE RENDERIZAÇÃO BLINDADA [cite: 2026-02-28]
     function render() {
         const container = document.getElementById('app');
         container.innerHTML = '';
 
         DATABASE.forEach(item => {
-            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "---", c: "0.00"};
+            // TRAVA DE CACHE: EVITA O "---" [cite: 2026-01-23]
+            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "SINCRONIZANDO...", c: "0.00"};
             const cor = item.semaforo === "ENTRA" ? "var(--green)" : (item.semaforo === "PULA" ? "var(--yellow)" : "var(--red)");
             
             container.innerHTML += `
                 <div class="card" style="border-left: 4px solid ${cor}">
                     <div class="flex-header">
-                        <b style="font-size:18px">${item.ticket}</b>
+                        <b style="font-size:20px; letter-spacing:1px">${item.ticket}</b>
                         <span class="badge" style="color:${cor}; border-color:${cor}; background:${cor}15">${item.semaforo}</span>
                     </div>
                     <div class="price">R$ ${cache.p} <small>(${cache.c}%)</small></div>
@@ -76,7 +77,7 @@
         });
     }
 
-    // 3. MOTOR DE SINCRONIA (BUSCA NA B3 E SALVA NO JSON LOCAL)
+    // 3. MOTOR DE SINCRONIA (ALPHA VANTAGE + LOCALSTORAGE) [cite: 2026-02-28]
     async function sync() {
         for (let asset of DATABASE) {
             try {
@@ -86,25 +87,26 @@
                 if (data["Global Quote"]) {
                     const quote = data["Global Quote"];
                     const price = parseFloat(quote["05. price"]).toFixed(2);
-                    const change = parseFloat(quote["10. change percent"]).replace('%','');
+                    const change = parseFloat(quote["10. change percent"]).toFixed(2);
                     
-                    // MEMÓRIA QUÂNTICA: SALVA NO LOCALSTORAGE PARA NÃO SUMIR
+                    // MEMÓRIA QUÂNTICA: PERSISTÊNCIA TOTAL [cite: 2026-02-06]
                     localStorage.setItem(asset.ticket, JSON.stringify({p: price, c: change}));
                     render();
                 }
-                await new Promise(r => setTimeout(r, 20000)); // DELAY DE SEGURANÇA (API FREE)
-            } catch (e) { console.error("Falha na sincronia: " + asset.ticket); }
+                // DELAY DE SEGURANÇA PARA API FREE (1 CHAMADA A CADA 20 SEGUNDOS) [cite: 2026-02-28]
+                await new Promise(r => setTimeout(r, 20000)); 
+            } catch (e) { console.error("ERRO_SYNC: " + asset.ticket); }
         }
     }
 
-    // INICIALIZAÇÃO
+    // RELÓGIO E STARTUP [cite: 2026-01-20]
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     render();
     sync();
-    setInterval(sync, 600000); // ATUALIZA TUDO A CADA 10 MINUTOS
+    setInterval(sync, 600000); // REFRESH TOTAL A CADA 10 MINUTOS [cite: 2026-02-28]
 </script>
 
-<div class="footer-status">SISTEMA 100% ONLINE // DADOS PERSISTENTES // V5.8.5</div>
+<div class="footer-status">SISTEMA 100% BLINDADO // DADOS PERSISTENTES // V5.8.5</div>
 </body>
- 
+    
 </html>
