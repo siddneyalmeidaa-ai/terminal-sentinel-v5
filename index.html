@@ -2,73 +2,59 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // OSCILAÇÃO B3</title>
+    <title>TESTE DE OSCILAÇÃO ÚNICA</title>
     <style>
-        :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; }
-        body { background: var(--bg); color: #eee; font-family: sans-serif; padding: 15px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; border-left: 4px solid #333; }
-        .price { font-size: 22px; font-weight: bold; margin: 10px 0; }
-        .osc { font-size: 14px; font-weight: bold; margin-left: 10px; }
-        .intel { background: #111; padding: 10px; border-radius: 5px; font-size: 11px; margin-top: 10px; }
+        body { background: #020202; color: #fff; font-family: sans-serif; padding: 20px; }
+        .monitor { border: 2px solid #f9d71c; padding: 20px; border-radius: 10px; width: 300px; }
+        .neon-price { font-size: 32px; font-weight: bold; display: block; }
+        .neon-osc { font-size: 18px; color: #00ff41; }
     </style>
 </head>
 <body>
 
-<div id="app"></div>
+<div class="monitor">
+    <b id="tite">PETR4</b>
+    <span class="neon-price" id="preco">R$ ---</span>
+    <span class="neon-osc" id="oscilacao">(0.00%)</span>
+</div>
 
 <script>
-    const DATABASE = [
-        { "ticket": "VALE3", "gatilhos": "Minério China", "hist_24h": "Minério subiu 1.2% em Dalian", "semaforo": "ENTRA", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "PETR4", "gatilhos": "Brent / Política", "hist_24h": "Brent US$ 84; Incerteza diretoria", "semaforo": "PULA", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "ITUB4", "gatilhos": "SELIC", "hist_24h": "Lucros resilientes no setor", "semaforo": "ENTRA", "api_key": "BBA9X8Q14OFJIBRZ" }
-    ];
-
-    function render() {
-        const container = document.getElementById('app');
-        container.innerHTML = '';
-        DATABASE.forEach(item => {
-            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "---", c: "0.00"};
-            const corOsc = parseFloat(cache.c) >= 0 ? "var(--green)" : "var(--red)";
-            const corStatus = item.semaforo === "ENTRA" ? "var(--green)" : "var(--yellow)";
-
-            container.innerHTML += `
-                <div class="card" style="border-left-color: ${corStatus}">
-                    <b>${item.ticket}</b>
-                    <div class="price">
-                        R$ ${cache.p} 
-                        <span class="osc" style="color:${corOsc}">(${cache.c}%)</span>
-                    </div>
-                    <div class="intel">🎯 ${item.gatilhos}<br><i style="color:#777">"${item.hist_24h}"</i></div>
-                </div>`;
-        });
-    }
-
-    async function sync() {
-        for (let asset of DATABASE) {
-            try {
-                // AQUI ESTÁ A SOLUÇÃO: O ponto e o SAO no final da URL [cite: 2026-02-28]
-                const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${asset.ticket}.SAO&apikey=${asset.api_key}`;
-                const res = await fetch(url);
-                const data = await res.json();
+    async function testeUnico() {
+        const tite = "PETR4";
+        const apiKey = "BBA9X8Q14OFJIBRZ"; // Sua chave do print
+        
+        // RESOLUÇÃO: Adicionando o ponto e o SAO para a B3
+        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${tite}.SAO&apikey=${apiKey}`;
+        
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            if (data["Global Quote"]) {
+                const quote = data["Global Quote"];
+                const p = parseFloat(quote["05. price"]).toFixed(2);
                 
-                if (data["Global Quote"]) {
-                    const quote = data["Global Quote"];
-                    const price = parseFloat(quote["05. price"]).toFixed(2);
-                    const change = parseFloat(quote["10. change percent"].replace('%','')).toFixed(2);
-                    
-                    localStorage.setItem(asset.ticket, JSON.stringify({p: price, c: change}));
-                    render();
+                // LIMPEZA DA STRING PARA A OSCILAÇÃO APARECER
+                const o = quote["10. change percent"]; 
+                
+                document.getElementById('preco').innerText = `R$ ${p}`;
+                document.getElementById('oscilacao').innerText = `(${o})`;
+                
+                // Mudar cor se for negativo
+                if (o.includes("-")) {
+                    document.getElementById('oscilacao').style.color = "#ff3131";
                 }
-                // Fila de espera para não travar a API (20 segundos entre cada um) [cite: 2026-02-28]
-                await new Promise(r => setTimeout(r, 20000)); 
-            } catch (e) { console.log("Erro: " + asset.ticket); }
+            } else {
+                document.getElementById('preco').innerText = "ERRO API";
+            }
+        } catch (e) {
+            document.getElementById('preco').innerText = "FALHA CONEXÃO";
         }
     }
 
-    render();
-    sync();
+    // Executa o teste assim que abrir a página
+    testeUnico();
 </script>
 </body>
-</
-    html>
+</htm
+    l>
