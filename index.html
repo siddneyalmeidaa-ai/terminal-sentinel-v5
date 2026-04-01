@@ -2,78 +2,77 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>TESTE SENTINEL // SYNC ÚNICO</title>
+    <title>TESTE DE ISOLAMENTO // SYDNEY</title>
     <style>
-        body { background: #020202; color: #eee; font-family: sans-serif; padding: 20px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 10px; border-left: 5px solid #00ff41; width: 350px; }
-        .price { font-size: 28px; font-weight: bold; margin: 15px 0; }
-        .osc { font-size: 16px; margin-left: 10px; }
-        .news-box { background: #111; padding: 10px; border-radius: 5px; font-size: 12px; color: #999; margin-top: 10px; border-top: 1px solid #222; }
-        .label { color: #00ff41; font-size: 10px; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        body { background: #020202; color: #eee; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #0a0a0a; border: 2px solid #1a1a1a; padding: 30px; border-radius: 15px; border-left: 8px solid #00ff41; width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,255,65,0.1); }
+        .ticket { font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #fff; }
+        .price { font-size: 42px; font-weight: bold; margin: 20px 0; color: #fff; }
+        .osc { font-size: 20px; font-weight: bold; }
+        .status { font-size: 12px; color: #666; margin-top: 20px; border-top: 1px solid #1a1a1a; padding-top: 15px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div id="display">Aguardando JSON...</div>
+<div id="terminal">
+    <div class="card">
+        <div id="status_msg">INICIANDO BUSCA...</div>
+    </div>
+</div>
 
 <script>
-    async function testarUnico() {
-        const display = document.getElementById('display');
+    // CONFIGURAÇÃO DIRETA PARA ISOLAR O ERRO [cite: 2026-02-28]
+    const CHAVE_TESTE = "3YfY2Nvp75kG9ANMx4vrDx"; 
+    const ATIVO_TESTE = "PETR4";
+
+    async function executarTeste() {
+        const display = document.getElementById('terminal');
         
         try {
-            // 1. LER O JSON QUE VOCÊ CONFIGUROU
-            const response = await fetch('sentinel_data.json');
+            // CONSULTA DIRETA NA B3 [cite: 2026-02-28]
+            const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ATIVO_TESTE}.SAO&apikey=${CHAVE_TESTE}`;
+            
+            const response = await fetch(url);
             const data = await response.json();
-            const asset = data[0]; // PEGA APENAS O PRIMEIRO TICKET (VALE3 OU PETR4)
 
-            display.innerHTML = `<div class="card"><b>PROCURANDO: ${asset.ticket}...</b></div>`;
-
-            // 2. CONSULTA COTAÇÃO (CHAVE 1)
-            const urlPrice = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${asset.ticket}.SAO&apikey=${asset.api_key_cotacao}`;
-            
-            // 3. CONSULTA NOTÍCIA (CHAVE 2)
-            const urlNews = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${asset.ticket}&apikey=${asset.api_key_news}`;
-
-            const resP = await fetch(urlPrice);
-            const jsonP = await resP.json();
-            
-            const resN = await fetch(urlNews);
-            const jsonN = await resN.json();
-
-            if (jsonP["Global Quote"]) {
-                const q = jsonP["Global Quote"];
-                const preco = parseFloat(q["05. price"]).toFixed(2);
-                const osc = parseFloat(q["10. change percent"].replace('%','')).toFixed(2);
-                const corOsc = parseFloat(osc) >= 0 ? "#00ff41" : "#ff3131";
-                
-                // PEGA O RESUMO DA PRIMEIRA NOTÍCIA
-                const noticia = jsonN.feed && jsonN.feed[0] ? jsonN.feed[0].summary : "Sem notícias recentes no radar.";
+            // ANALISANDO RESPOSTA DA API [cite: 2026-02-28]
+            if (data["Note"]) {
+                display.innerHTML = `<div class="card" style="border-left-color: #f9d71c">
+                    <b style="color:#f9d71c">LIMITE DE TEMPO</b><br><br>
+                    Aguarde 60 segundos para tentar novamente.
+                </div>`;
+            } 
+            else if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
+                const quote = data["Global Quote"];
+                const preco = parseFloat(quote["05. price"]).toFixed(2);
+                const osc = parseFloat(quote["10. change percent"].replace('%','')).toFixed(2);
+                const cor = parseFloat(osc) >= 0 ? "#00ff41" : "#ff3131";
+                const sinal = parseFloat(osc) > 0 ? "+" : "";
 
                 display.innerHTML = `
                     <div class="card">
-                        <b>${asset.ticket}</b>
-                        <div class="price">
-                            R$ ${preco} 
-                            <span class="osc" style="color:${corOsc}">(${osc}%)</span>
-                        </div>
-                        <div class="news-box">
-                            <span class="label">Radar de Notícias:</span>
-                            ${noticia.substring(0, 150)}...
-                        </div>
+                        <div class="ticket">${ATIVO_TESTE}</div>
+                        <div class="price">R$ ${preco}</div>
+                        <div class="osc" style="color:${cor}">${sinal}${osc}%</div>
+                        <div class="status">Sincronizado via API Direta</div>
                     </div>
                 `;
-            } else {
-                display.innerHTML = "ERRO: Chave de cotação inválida ou limite atingido.";
+            } 
+            else {
+                display.innerHTML = `<div class="card" style="border-left-color: #ff3131">
+                    <b style="color:#ff3131">ERRO DE CHAVE</b><br><br>
+                    A API não validou o acesso. Verifique a chave no código.
+                </div>`;
             }
-
         } catch (e) {
-            display.innerHTML = "ERRO CRÍTICO: Verifique se o arquivo sentinel_data.json está correto.";
-            console.error(e);
+            display.innerHTML = `<div class="card" style="border-left-color: #ff3131">ERRO DE CONEXÃO</div>`;
         }
     }
 
-    testarUnico();
+    // Executa o teste após 2 segundos para garantir o carregamento
+    setTimeout(executarTeste, 2000);
 </script>
+
 </body>
-    
-</html>
+<
+    /html>
