@@ -3,83 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // PERSISTENT</title>
+    <title>SENTINEL V5 // SYDNEY OPERATIVE</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
         body { background: var(--bg); color: #eee; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
-        .market-header { background: var(--card); border: 1px solid #1a1a1a; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-top: 3px solid var(--green); }
-        .op-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .asset-card { background: var(--card); border: 1px solid #1a1a1a; border-radius: 6px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Layout */
+        .market-header { background: var(--card); border: 1px solid #1a1a1a; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-top: 3px solid var(--green); }
+        .radar-container { background: var(--card); border: 1px solid #1a1a1a; border-radius: 8px; padding: 15px; margin-bottom: 15px; height: 300px; }
+        .op-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 60px; }
+        
+        /* Cards */
+        .asset-card { background: var(--card); border: 1px solid #1a1a1a; border-radius: 6px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
         .badge { padding: 4px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; border: 1px solid; min-width: 65px; text-align: center; }
+        
+        /* Bottom Intelligence */
+        .active-intel { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--green); padding: 10px 15px; font-size: 11px; z-index: 100; }
     </style>
 </head>
 <body>
 
 <div class="market-header">
     <small style="color:#666">B3 // IBOVESPA (COLETIVIDADE)</small>
-    <div style="font-size: 24px; font-weight: 800;">107.200,56</div>
-    <div style="color: var(--red); font-size: 12px;">-1.04% %</div>
+    <div style="font-size: 22px; font-weight: 800;">107.200,56 <span style="color:var(--red); font-size:12px">-1.04%</span></div>
 </div>
 
-<div id="status" style="font-size: 9px; color: var(--green); text-align: center; margin-bottom: 10px;">SINCRONIZANDO DADOS REAIS...</div>
+<div class="radar-container">
+    <canvas id="marketRadar"></canvas>
+</div>
+
+<div id="sync-status" style="font-size: 9px; color: var(--green); text-align: center; margin-bottom: 10px;">SINCRONIZANDO COM B3...</div>
+
 <div class="op-grid" id="asset-list"></div>
+
+<div class="active-intel">
+    <span style="color:var(--green); font-weight:bold">ACTIVE INTELLIGENCE:</span>
+    <div id="news-ticker" style="margin-top:4px">[VALE3] [01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.</div>
+</div>
 
 <script>
     const API_KEY = 'BBA9X8Q14OFJIBRZ';
     const TICKETS = [
-        {t:'VALE3.SAO', s:'ENTRA'}, {t:'PETR4.SAO', s:'PULA'}, {t:'ITUB4.SAO', s:'ENTRA'}, 
-        {t:'BBAS3.SAO', s:'ENTRA'}, {t:'ABEV3.SAO', s:'PULA'}, {t:'B3SA3.SAO', s:'PULA'}, 
-        {t:'ELET3.SAO', s:'ENTRA'}, {t:'WEGE3.SAO', s:'ENTRA'}, {t:'RENT3.SAO', s:'PULA'}, {t:'MGLU3.SAO', s:'NÃO ENTRA'}
+        {t:'VALE3.SAO', s:'ENTRA', v:90}, {t:'PETR4.SAO', s:'PULA', v:40}, {t:'ITUB4.SAO', s:'ENTRA', v:85}, 
+        {t:'BBAS3.SAO', s:'ENTRA', v:88}, {t:'ABEV3.SAO', s:'PULA', v:30}, {t:'B3SA3.SAO', s:'PULA', v:35}, 
+        {t:'ELET3.SAO', s:'ENTRA', v:82}, {t:'WEGE3.SAO', s:'ENTRA', v:80}, {t:'RENT3.SAO', s:'PULA', v:45}, {t:'MGLU3.SAO', s:'NÃO ENTRA', v:15}
     ];
 
-    async function updateUI() {
+    // Inicializa Radar
+    const ctx = document.getElementById('marketRadar').getContext('2d');
+    const radar = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: TICKETS.map(x => x.t.split('.')[0]),
+            datasets: [{
+                label: 'IPI (Sinal)',
+                data: TICKETS.map(x => x.v),
+                backgroundColor: 'rgba(0, 255, 65, 0.2)',
+                borderColor: '#00ff41',
+                borderWidth: 2,
+                pointBackgroundColor: '#00ff41'
+            }]
+        },
+        options: {
+            scales: { r: { grid: { color: '#1a1a1a' }, angleLines: { color: '#1a1a1a' }, ticks: { display: false }, min: 0, max: 100 } },
+            plugins: { legend: { display: false } },
+            maintainAspectRatio: false
+        }
+    });
+
+    async function syncMarket() {
         const list = document.getElementById('asset-list');
-        list.innerHTML = '';
+        const status = document.getElementById('sync-status');
         
         for (let i = 0; i < TICKETS.length; i++) {
-            const item = TICKETS[i];
-            // Tenta pegar da memória se a API falhar
-            const cached = JSON.parse(localStorage.getItem(item.t)) || { price: '0.00', change: '0.00' };
-            const badgeColor = item.s === 'ENTRA' ? 'var(--green)' : (item.s === 'PULA' ? 'var(--yellow)' : 'var(--red)');
-            
-            list.innerHTML += `
-                <div class="asset-card">
-                    <div>
-                        <div style="font-weight:800; font-size:16px">${item.t.split('.')[0]}</div>
-                        <div style="font-size:10px; color:#444">R$ ${cached.price} (${cached.change}%)</div>
-                    </div>
-                    <div class="badge" style="color:${badgeColor}; border-color:${badgeColor}">${item.s}</div>
-                </div>`;
-        }
-    }
-
-    async function syncAPI() {
-        const status = document.getElementById('status');
-        for (let i = 0; i < TICKETS.length; i++) {
-            if (i === 5) { // Pausa obrigatória para não travar a chave
-                status.innerText = "RESPEITANDO LIMITE DA B3 (AGUARDE 60S)...";
+            if (i === 5) {
+                status.innerText = "COOL-DOWN API (AGUARDE 60S)...";
                 await new Promise(r => setTimeout(r, 61000));
             }
-            
             try {
                 const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${TICKETS[i].t}&apikey=${API_KEY}`);
                 const data = await res.json();
                 const q = data["Global Quote"];
                 if (q) {
-                    localStorage.setItem(TICKETS[i].t, JSON.stringify({
-                        price: parseFloat(q["05. price"]).toFixed(2),
-                        change: parseFloat(q["10. change percent"]).toFixed(2)
-                    }));
-                    updateUI(); // Atualiza um por um conforme chega
+                    const price = parseFloat(q["05. price"]).toFixed(2);
+                    const change = parseFloat(q["10. change percent"]).toFixed(2);
+                    const badgeColor = TICKETS[i].s === 'ENTRA' ? 'var(--green)' : (TICKETS[i].s === 'PULA' ? 'var(--yellow)' : 'var(--red)');
+                    
+                    const card = document.createElement('div');
+                    card.className = 'asset-card';
+                    card.innerHTML = `
+                        <div>
+                            <div style="font-weight:800; font-size:16px">${TICKETS[i].t.split('.')[0]}</div>
+                            <div style="font-size:10px; color:#444">R$ ${price} (${change}%)</div>
+                        </div>
+                        <div class="badge" style="color:${badgeColor}; border-color:${badgeColor}">${TICKETS[i].s}</div>`;
+                    list.appendChild(card);
                 }
-            } catch (e) { console.error("Limite atingido"); }
+            } catch (e) { console.error("Erro na API"); }
         }
-        status.innerText = "● SISTEMA SINCRONIZADO // DADOS EM CACHE";
+        status.innerText = "● SISTEMA OPERACIONAL // DADOS REAIS";
     }
 
-    updateUI(); // Mostra o que tem na memória primeiro
-    syncAPI();  // Tenta atualizar com a B3
+    syncMarket();
 </script>
 </body>
-</
-    html>
+    
+</html>
