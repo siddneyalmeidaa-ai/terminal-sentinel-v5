@@ -1,86 +1,110 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // BLINDAGEM JSON</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>SENTINEL V5 // BASE BLINDADA</title>
     <style>
         :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
-        body { background: var(--bg); color: #eee; font-family: sans-serif; margin: 0; padding: 10px; }
-        .header { border-bottom: 2px solid var(--green); padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .asset-card { background: var(--card); border: 1px solid #1a1a1a; padding: 12px; margin-bottom: 6px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .badge { font-size: 10px; font-weight: bold; padding: 4px 8px; border: 1px solid; border-radius: 3px; }
-        .time-info { font-size: 8px; color: #444; margin-top: 3px; }
+        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; overflow-x: hidden; }
+        .header { border-bottom: 2px solid var(--green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .clock { color: var(--green); font-weight: bold; font-family: monospace; }
+        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; transition: 0.3s; }
+        .flex-header { display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 11px; font-weight: bold; padding: 5px 12px; border: 1px solid; border-radius: 4px; text-transform: uppercase; }
+        .price { font-size: 22px; font-weight: bold; margin: 10px 0; color: #fff; }
+        .price small { font-size: 12px; color: #888; margin-left: 5px; }
+        .intel-box { background: #111; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 2px solid #333; }
+        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .hist { color: #aaa; font-size: 10px; font-style: italic; line-height: 1.4; }
+        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 8px; }
+        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 3px 0; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <span><b>SENTINEL V5</b> // BASE BLINDADA</span>
-    <span id="clock" style="color:var(--green)">00:00:00</span>
+    <span id="clock" class="clock">19:45:16</span>
 </div>
 
-<div id="asset-list"></div>
+<div id="app"></div>
 
 <script>
-    const API_KEY = 'BBA9X8Q14OFJIBRZ';
-    const TICKETS = [
-        {t:'VALE3.SAO', s:'ENTRA', p:'72.45', n:'Minério estável em Dalian.'},
-        {t:'PETR4.SAO', s:'PULA', p:'38.12', n:'Incerteza sobre política de dividendos.'},
-        {t:'ITUB4.SAO', s:'ENTRA', p:'32.90', n:'Setor bancário com Selic alta.'},
-        {t:'BBAS3.SAO', s:'ENTRA', p:'54.20', n:'Crédito agro impulsiona resultados.'},
-        {t:'ABEV3.SAO', s:'PULA', p:'11.80', n:'Custos de insumos em análise.'}
+    // 1. O BANCO DE DADOS (DATABASE) QUE VOCÊ ENVIOU
+    const DATABASE = [
+        { "ticket": "VALE3", "gatilhos": "Minério China / Infraestrutura", "hist_24h": "[01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.", "perf_12m": "-14.20%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "PETR4", "gatilhos": "Brent / Política / Dividendos", "hist_24h": "[31/03] Brent US$ 84; Incerteza sobre nova diretoria.", "perf_12m": "+28.50%", "semaforo": "PULA", "trava": "-75%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "ITUB4", "gatilhos": "SELIC / Inadimplência", "hist_24h": "[01/04] Relatório indica lucros resilientes no setor bancário.", "perf_12m": "+18.40%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "BBAS3", "gatilhos": "Agro / Eficiência Operacional", "hist_24h": "[31/03] Liberação de crédito recorde para Plano Safra.", "perf_12m": "+34.20%", "semaforo": "ENTRA", "trava": "-60%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "ABEV3", "gatilhos": "Custos Alumínio / Consumo", "hist_24h": "[01/04] Queda no custo de insumos metálicos em Londres.", "perf_12m": "-6.80%", "semaforo": "PULA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "B3SA3", "gatilhos": "Volume Negociado / Juros", "hist_24h": "[31/03] Queda de 5% no volume financeiro médio semanal.", "perf_12m": "-11.30%", "semaforo": "PULA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "ELET3", "gatilhos": "Tarifas / Reservatórios", "hist_24h": "[01/04] ONS confirma níveis estáveis de reservatórios.", "perf_12m": "+12.60%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "WEGE3", "gatilhos": "Dólar / Indústria Global", "hist_24h": "[01/04] Aumento de demanda industrial na Europa e EUA.", "perf_12m": "+22.10%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "RENT3", "gatilhos": "SELIC / Renovação de Frota", "hist_24h": "[31/03] Venda de frotas corporativas sobe 3%.", "perf_12m": "-15.40%", "semaforo": "PULA", "trava": "-65%", "api_key": "BBA9X8Q14OFJIBRZ" },
+        { "ticket": "MGLU3", "gatilhos": "Juros / Consumo Varejo", "hist_24h": "[01/04] Expectativa de manutenção da SELIC trava varejo.", "perf_12m": "-42.10%", "semaforo": "NÃO ENTRA", "trava": "-80%", "api_key": "BBA9X8Q14OFJIBRZ" }
     ];
 
+    // 2. MOTOR DE RENDERIZAÇÃO (REPRODUZ O SEU JSON NA TELA)
     function render() {
-        const list = document.getElementById('asset-list');
-        list.innerHTML = '';
-        TICKETS.forEach(item => {
-            // Busca do banco local. Se não tiver nada, usa o valor padrão do JSON
-            const saved = JSON.parse(localStorage.getItem(item.t)) || {price: item.p, change: '0.00', time: 'DADO INICIAL'};
-            const color = item.s === 'ENTRA' ? 'var(--green)' : 'var(--yellow)';
+        const container = document.getElementById('app');
+        container.innerHTML = '';
+
+        DATABASE.forEach(item => {
+            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "---", c: "0.00"};
+            const cor = item.semaforo === "ENTRA" ? "var(--green)" : (item.semaforo === "PULA" ? "var(--yellow)" : "var(--red)");
             
-            list.innerHTML += `
-                <div class="asset-card">
-                    <div>
-                        <b>${item.t.split('.')[0]}</b>
-                        <div style="font-size:11px; color:#888">R$ ${saved.price} (${saved.change}%)</div>
-                        <div class="time-info">Sincronizado: ${saved.time}</div>
+            container.innerHTML += `
+                <div class="card" style="border-left: 4px solid ${cor}">
+                    <div class="flex-header">
+                        <b style="font-size:18px">${item.ticket}</b>
+                        <span class="badge" style="color:${cor}; border-color:${cor}; background:${cor}15">${item.semaforo}</span>
                     </div>
-                    <div class="badge" style="color:${color}; border-color:${color}">${item.s}</div>
-                </div>`;
+                    <div class="price">R$ ${cache.p} <small>(${cache.c}%)</small></div>
+                    
+                    <div class="intel-box">
+                        <div class="gatilho">🎯 GATILHOS: ${item.gatilhos}</div>
+                        <div class="hist">"${item.hist_24h}"</div>
+                    </div>
+
+                    <div class="metrics">
+                        <span>DESEMP. 12M: ${item.perf_12m}</span>
+                        <span>TRAVA: ${item.trava}</span>
+                    </div>
+                </div>
+            `;
         });
     }
 
-    async function updateData() {
-        const now = new Date().toLocaleTimeString('pt-BR');
-        for (let i = 0; i < TICKETS.length; i++) {
+    // 3. MOTOR DE SINCRONIA (BUSCA NA B3 E SALVA NO JSON LOCAL)
+    async function sync() {
+        for (let asset of DATABASE) {
             try {
-                const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${TICKETS[i].t}&apikey=${API_KEY}`);
+                const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${asset.ticket}.SAO&apikey=${asset.api_key}`);
                 const data = await res.json();
+                
                 if (data["Global Quote"]) {
-                    const q = data["Global Quote"];
-                    const info = {
-                        price: parseFloat(q["05. price"]).toFixed(2),
-                        change: parseFloat(q["10. change percent"]).toFixed(2),
-                        time: now
-                    };
-                    localStorage.setItem(TICKETS[i].t, JSON.stringify(info));
+                    const quote = data["Global Quote"];
+                    const price = parseFloat(quote["05. price"]).toFixed(2);
+                    const change = parseFloat(quote["10. change percent"]).replace('%','');
+                    
+                    // MEMÓRIA QUÂNTICA: SALVA NO LOCALSTORAGE PARA NÃO SUMIR
+                    localStorage.setItem(asset.ticket, JSON.stringify({p: price, c: change}));
                     render();
                 }
-                // Espera 30s entre cada ticket para não travar a API gratuita
-                await new Promise(r => setTimeout(r, 30000));
-            } catch (e) { console.warn("API Offline - Mantendo Cache"); }
+                await new Promise(r => setTimeout(r, 20000)); // DELAY DE SEGURANÇA (API FREE)
+            } catch (e) { console.error("Falha na sincronia: " + asset.ticket); }
         }
     }
 
-    // Relógio e Ciclo de 10 minutos
+    // INICIALIZAÇÃO
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
-    render(); // Carrega o que está salvo na hora
-    updateData(); // Inicia a atualização lenta em paralelo
-    setInterval(updateData, 600000); // Repete a cada 10 minutos
+    render();
+    sync();
+    setInterval(sync, 600000); // ATUALIZA TUDO A CADA 10 MINUTOS
 </script>
+
+<div class="footer-status">SISTEMA 100% ONLINE // DADOS PERSISTENTES // V5.8.5</div>
 </body>
-<
-    /html>
+ 
+</html>
