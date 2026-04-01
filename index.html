@@ -3,65 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V5 // BASE BLINDADA</title>
+    <title>SENTINEL V5 // OSCILAÇÃO REAL</title>
     <style>
         :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
-        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; padding-bottom: 40px; }
+        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; padding-bottom: 50px; }
         .header { border-bottom: 2px solid var(--green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .clock { color: var(--green); font-weight: bold; font-family: monospace; }
-        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; position: relative; }
+        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; border-left: 4px solid #333; }
         .flex-header { display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 11px; font-weight: bold; padding: 5px 12px; border: 1px solid; border-radius: 4px; text-transform: uppercase; }
         .price { font-size: 24px; font-weight: bold; margin: 12px 0; color: #fff; }
-        .price small { font-size: 13px; color: #888; margin-left: 6px; font-weight: normal; }
+        .price small { font-size: 14px; margin-left: 8px; font-weight: bold; }
         .intel-box { background: #0d0d0d; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid #1a1a1a; }
-        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; }
         .hist { color: #999; font-size: 10px; font-style: italic; line-height: 1.5; }
-        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 10px; text-transform: uppercase; }
-        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 5px 0; z-index: 100; }
+        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 10px; }
+        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 5px 0; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span><b>SENTINEL V5</b> // BASE BLINDADA</span>
-    <span id="clock" class="clock">19:48:30</span>
+    <span><b>SENTINEL V5</b> // OSCILAÇÃO ATIVA</span>
+    <span id="clock" class="clock">00:00:00</span>
 </div>
 
 <div id="app"></div>
 
 <script>
-    // 1. BANCO DE DADOS CORE (SEU PADRÃO OURO) [cite: 2026-01-11]
     const DATABASE = [
         { "ticket": "VALE3", "gatilhos": "Minério China / Infraestrutura", "hist_24h": "[01/04] Minério subiu 1.2% em Dalian; Estímulos civis confirmados.", "perf_12m": "-14.20%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
         { "ticket": "PETR4", "gatilhos": "Brent / Política / Dividendos", "hist_24h": "[31/03] Brent US$ 84; Incerteza sobre nova diretoria.", "perf_12m": "+28.50%", "semaforo": "PULA", "trava": "-75%", "api_key": "BBA9X8Q14OFJIBRZ" },
         { "ticket": "ITUB4", "gatilhos": "SELIC / Inadimplência", "hist_24h": "[01/04] Relatório indica lucros resilientes no setor bancário.", "perf_12m": "+18.40%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
         { "ticket": "BBAS3", "gatilhos": "Agro / Eficiência Operacional", "hist_24h": "[31/03] Liberação de crédito recorde para Plano Safra.", "perf_12m": "+34.20%", "semaforo": "ENTRA", "trava": "-60%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "ABEV3", "gatilhos": "Custos Alumínio / Consumo", "hist_24h": "[01/04] Queda no custo de insumos metálicos em Londres.", "perf_12m": "-6.80%", "semaforo": "PULA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "B3SA3", "gatilhos": "Volume Negociado / Juros", "hist_24h": "[31/03] Queda de 5% no volume financeiro médio semanal.", "perf_12m": "-11.30%", "semaforo": "PULA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "ELET3", "gatilhos": "Tarifas / Reservatórios", "hist_24h": "[01/04] ONS confirma níveis estáveis de reservatórios.", "perf_12m": "+12.60%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "WEGE3", "gatilhos": "Dólar / Indústria Global", "hist_24h": "[01/04] Aumento de demanda industrial na Europa e EUA.", "perf_12m": "+22.10%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "RENT3", "gatilhos": "SELIC / Renovação de Frota", "hist_24h": "[31/03] Venda de frotas corporativas sobe 3%.", "perf_12m": "-15.40%", "semaforo": "PULA", "trava": "-65%", "api_key": "BBA9X8Q14OFJIBRZ" },
-        { "ticket": "MGLU3", "gatilhos": "Juros / Consumo Varejo", "hist_24h": "[01/04] Expectativa de manutenção da SELIC trava varejo.", "perf_12m": "-42.10%", "semaforo": "NÃO ENTRA", "trava": "-80%", "api_key": "BBA9X8Q14OFJIBRZ" }
+        { "ticket": "ABEV3", "gatilhos": "Custos Alumínio / Consumo", "hist_24h": "[01/04] Queda no custo de insumos metálicos em Londres.", "perf_12m": "-6.80%", "semaforo": "PULA", "trava": "-50%", "api_key": "BBA9X8Q14OFJIBRZ" }
     ];
 
-    // 2. MOTOR DE RENDERIZAÇÃO BLINDADA [cite: 2026-02-28]
     function render() {
         const container = document.getElementById('app');
         container.innerHTML = '';
 
         DATABASE.forEach(item => {
-            // TRAVA DE CACHE: EVITA O "---" [cite: 2026-01-23]
-            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "SINCRONIZANDO...", c: "0.00"};
-            const cor = item.semaforo === "ENTRA" ? "var(--green)" : (item.semaforo === "PULA" ? "var(--yellow)" : "var(--red)");
+            const cache = JSON.parse(localStorage.getItem(item.ticket)) || {p: "---", c: "0.00"};
+            const corStatus = item.semaforo === "ENTRA" ? "var(--green)" : (item.semaforo === "PULA" ? "var(--yellow)" : "var(--red)");
             
+            // Lógica de Cor da Oscilação [cite: 2026-01-12]
+            const oscVal = parseFloat(cache.c);
+            const corOsc = oscVal > 0 ? "var(--green)" : (oscVal < 0 ? "var(--red)" : "#888");
+            const sinal = oscVal > 0 ? "+" : "";
+
             container.innerHTML += `
-                <div class="card" style="border-left: 4px solid ${cor}">
+                <div class="card" style="border-left-color: ${corStatus}">
                     <div class="flex-header">
-                        <b style="font-size:20px; letter-spacing:1px">${item.ticket}</b>
-                        <span class="badge" style="color:${cor}; border-color:${cor}; background:${cor}15">${item.semaforo}</span>
+                        <b style="font-size:20px">${item.ticket}</b>
+                        <span class="badge" style="color:${corStatus}; border-color:${corStatus}; background:${corStatus}15">${item.semaforo}</span>
                     </div>
-                    <div class="price">R$ ${cache.p} <small>(${cache.c}%)</small></div>
+                    <div class="price">
+                        R$ ${cache.p} 
+                        <small style="color:${corOsc}">${sinal}${cache.c}%</small>
+                    </div>
                     
                     <div class="intel-box">
                         <div class="gatilho">🎯 GATILHOS: ${item.gatilhos}</div>
@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="metrics">
-                        <span>DESEMP. 12M: ${item.perf_12m}</span>
+                        <span>12M: ${item.perf_12m}</span>
                         <span>TRAVA: ${item.trava}</span>
                     </div>
                 </div>
@@ -77,7 +77,6 @@
         });
     }
 
-    // 3. MOTOR DE SINCRONIA (ALPHA VANTAGE + LOCALSTORAGE) [cite: 2026-02-28]
     async function sync() {
         for (let asset of DATABASE) {
             try {
@@ -87,26 +86,25 @@
                 if (data["Global Quote"]) {
                     const quote = data["Global Quote"];
                     const price = parseFloat(quote["05. price"]).toFixed(2);
-                    const change = parseFloat(quote["10. change percent"]).toFixed(2);
                     
-                    // MEMÓRIA QUÂNTICA: PERSISTÊNCIA TOTAL [cite: 2026-02-06]
+                    // LIMPEZA DO DADO (REMOVE O % PARA CALCULAR COR) [cite: 2026-02-28, 2026-01-23]
+                    const change = parseFloat(quote["10. change percent"].replace('%','')).toFixed(2);
+                    
                     localStorage.setItem(asset.ticket, JSON.stringify({p: price, c: change}));
                     render();
                 }
-                // DELAY DE SEGURANÇA PARA API FREE (1 CHAMADA A CADA 20 SEGUNDOS) [cite: 2026-02-28]
-                await new Promise(r => setTimeout(r, 20000)); 
-            } catch (e) { console.error("ERRO_SYNC: " + asset.ticket); }
+                await new Promise(r => setTimeout(r, 20000)); // Delay API Free [cite: 2026-02-28]
+            } catch (e) { console.error("Erro no ticket: " + asset.ticket); }
         }
     }
 
-    // RELÓGIO E STARTUP [cite: 2026-01-20]
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     render();
     sync();
-    setInterval(sync, 600000); // REFRESH TOTAL A CADA 10 MINUTOS [cite: 2026-02-28]
+    setInterval(sync, 600000);
 </script>
 
-<div class="footer-status">SISTEMA 100% BLINDADO // DADOS PERSISTENTES // V5.8.5</div>
-</body>
-    
+<div class="footer-status">DADOS EM TEMPO REAL // OSCILAÇÃO ATIVA // V5.9</div>
+</body
+    >
 </html>
