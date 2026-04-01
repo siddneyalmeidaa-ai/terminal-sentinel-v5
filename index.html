@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL SENTINEL V5 // MATRIX</title>
+    <style>
+        body { background-color: #050505; color: #00ff41; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; }
+        .header { border-bottom: 2px solid #00ff41; margin-bottom: 20px; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; background: rgba(0, 20, 0, 0.9); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+        th, td { border: 1px solid #004400; padding: 12px; text-align: left; font-size: 11px; }
+        th { background-color: #001100; color: #00ff41; text-transform: uppercase; }
+        .status-entra { color: #00ff41; font-weight: bold; text-shadow: 0 0 5px #00ff41; }
+        .status-pula { color: #ffcc00; }
+        .status-nao { color: #ff3300; }
+        .news-box { font-style: italic; color: #00ccff; max-width: 250px; }
+        .risk-high { color: #ff3300; font-weight: bold; background: rgba(50, 0, 0, 0.3); }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1><span class="blink">●</span> TERMINAL SENTINEL V5 // SYDNEY OPERATIVE</h1>
+    <p>TIME: 17:24 | STATUS: BLINDADO | DATA SOURCE: 9-COLUMNS_JSON</p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Ticket</th>
+            <th>Gatilhos</th>
+            <th>Histórico 24h</th>
+            <th>Perf. 12M</th>
+            <th>Alerta Div.</th>
+            <th>Risco Pol.</th>
+            <th>IPI (Sinal)</th>
+            <th>Trava Din.</th>
+            <th>API KEY</th>
+        </tr>
+    </thead>
+    <tbody id="sentinel-body">
+        </tbody>
+</table>
+
+<script>
+    async function loadSentinelData() {
+        try {
+            const response = await fetch('sentinel_data.json');
+            const data = await response.json();
+            const tableBody = document.getElementById('sentinel-body');
+            
+            tableBody.innerHTML = ""; 
+
+            data.forEach(item => {
+                const statusClass = item.semaforo.toLowerCase().replace(" ", "-");
+                const riskClass = item.risco_pol === 'ALTO' ? 'risk-high' : '';
+                
+                let row = `<tr>
+                    <td><strong>${item.ticket}</strong></td>
+                    <td>${item.gatilhos}</td>
+                    <td class="news-box">${item.hist_24h}</td>
+                    <td>${item.perf_12m}</td>
+                    <td>${item.alerta_div}</td>
+                    <td class="${riskClass}">${item.risco_pol}</td>
+                    <td class="status-${statusClass}">${item.semaforo}</td>
+                    <td>${item.trava}</td>
+                    <td>${item.api_key.substring(0, 5)}***</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        } catch (error) {
+            console.error("ERRO CRÍTICO NA PASTA MÃE:", error);
+        }
+    }
+    loadSentinelData();
+</script>
+
+</body>
+</h
+  tml>
