@@ -2,59 +2,68 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>TESTE DE OSCILAÇÃO ÚNICA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENTINEL V5 // CHAVE: 3YfY2Nvp75kG9ANMx4vrDx</title>
     <style>
-        body { background: #020202; color: #fff; font-family: sans-serif; padding: 20px; }
-        .monitor { border: 2px solid #f9d71c; padding: 20px; border-radius: 10px; width: 300px; }
-        .neon-price { font-size: 32px; font-weight: bold; display: block; }
-        .neon-osc { font-size: 18px; color: #00ff41; }
+        :root { --green: #00ff41; --red: #ff3131; --yellow: #f9d71c; --bg: #020202; --card: #0a0a0a; }
+        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; padding-bottom: 60px; }
+        .header { border-bottom: 2px solid var(--green); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .clock { color: var(--green); font-weight: bold; font-family: monospace; }
+        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 12px; border-radius: 8px; border-left: 4px solid #333; }
+        .flex-header { display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 11px; font-weight: bold; padding: 5px 12px; border: 1px solid; border-radius: 4px; text-transform: uppercase; }
+        .price { font-size: 26px; font-weight: bold; margin: 12px 0; color: #fff; }
+        .price small { font-size: 14px; margin-left: 8px; font-weight: bold; }
+        .intel-box { background: #0d0d0d; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid #1a1a1a; }
+        .gatilho { color: var(--green); font-size: 11px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; }
+        .hist { color: #999; font-size: 10px; font-style: italic; line-height: 1.5; }
+        .metrics { font-size: 10px; color: #444; margin-top: 12px; display: flex; justify-content: space-between; border-top: 1px solid #1a1a1a; padding-top: 10px; }
+        .footer-status { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--green); color: #000; font-size: 9px; font-weight: bold; text-align: center; padding: 5px 0; }
     </style>
 </head>
 <body>
 
-<div class="monitor">
-    <b id="tite">PETR4</b>
-    <span class="neon-price" id="preco">R$ ---</span>
-    <span class="neon-osc" id="oscilacao">(0.00%)</span>
+<div class="header">
+    <span><b>SENTINEL V5.9</b> // NOVA CHAVE ATIVA</span>
+    <span id="clock" class="clock">20:06:00</span>
 </div>
 
-<script>
-    async function testeUnico() {
-        const tite = "PETR4";
-        const apiKey = "BBA9X8Q14OFJIBRZ"; // Sua chave do print
-        
-        // RESOLUÇÃO: Adicionando o ponto e o SAO para a B3
-        const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${tite}.SAO&apikey=${apiKey}`;
-        
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            
-            if (data["Global Quote"]) {
-                const quote = data["Global Quote"];
-                const p = parseFloat(quote["05. price"]).toFixed(2);
-                
-                // LIMPEZA DA STRING PARA A OSCILAÇÃO APARECER
-                const o = quote["10. change percent"]; 
-                
-                document.getElementById('preco').innerText = `R$ ${p}`;
-                document.getElementById('oscilacao').innerText = `(${o})`;
-                
-                // Mudar cor se for negativo
-                if (o.includes("-")) {
-                    document.getElementById('oscilacao').style.color = "#ff3131";
-                }
-            } else {
-                document.getElementById('preco').innerText = "ERRO API";
-            }
-        } catch (e) {
-            document.getElementById('preco').innerText = "FALHA CONEXÃO";
-        }
-    }
+<div id="app"></div>
 
-    // Executa o teste assim que abrir a página
-    testeUnico();
-</script>
-</body>
-</htm
-    l>
+<script>
+    // BANCO DE DADOS COM A CHAVE NOVA
+    const DATABASE = [
+        { "tite": "VALE3", "gatilhos": "Minério China / Infraestrutura", "hist_24h": "[01/04] Minério subiu 1.2% em Dalian.", "perf_12m": "-14.20%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "3YfY2Nvp75kG9ANMx4vrDx" },
+        { "tite": "PETR4", "gatilhos": "Brent / Política / Dividendos", "hist_24h": "[31/03] Brent US$ 84; Alinhamento diretoria.", "perf_12m": "+28.50%", "semaforo": "PULA", "trava": "-75%", "api_key": "3YfY2Nvp75kG9ANMx4vrDx" },
+        { "tite": "ITUB4", "gatilhos": "SELIC / Inadimplência", "hist_24h": "[01/04] Lucros resilientes no setor bancário.", "perf_12m": "+18.40%", "semaforo": "ENTRA", "trava": "-50%", "api_key": "3YfY2Nvp75kG9ANMx4vrDx" },
+        { "tite": "BBAS3", "gatilhos": "Agro / Plano Safra", "hist_24h": "[31/03] Liberação de crédito recorde confirmada.", "perf_12m": "+34.20%", "semaforo": "ENTRA", "trava": "-60%", "api_key": "3YfY2Nvp75kG9ANMx4vrDx" },
+        { "tite": "ABEV3", "gatilhos": "Custos Alumínio / Consumo", "hist_24h": "[01/04] Queda no custo de insumos metálicos.", "perf_12m": "-6.80%", "semaforo": "PULA", "trava": "-50%", "api_key": "3YfY2Nvp75kG9ANMx4vrDx" }
+    ];
+
+    function render() {
+        const container = document.getElementById('app');
+        container.innerHTML = '';
+
+        DATABASE.forEach(item => {
+            const cache = JSON.parse(localStorage.getItem(item.tite)) || {p: "---", c: "0.00"};
+            const statusCor = item.semaforo === "ENTRA" ? "var(--green)" : "var(--yellow)";
+            
+            // Lógica de Cor da Oscilação
+            const valOsc = parseFloat(cache.c);
+            const corOsc = valOsc > 0 ? "var(--green)" : (valOsc < 0 ? "var(--red)" : "#888");
+            const sinal = valOsc > 0 ? "+" : "";
+
+            container.innerHTML += `
+                <div class="card" style="border-left-color: ${statusCor}">
+                    <div class="flex-header">
+                        <b style="font-size:20px; letter-spacing:1px">${item.tite}</b>
+                        <span class="badge" style="color:${statusCor}; border-color:${statusCor}; background:${statusCor}15">${item.semaforo}</span>
+                    </div>
+                    <div class="price">
+                        R$ ${cache.p} 
+                        <small style="color:${corOsc}">${sinal}${cache.c}%</small>
+                    </div>
+                    
+                    <div class="intel-box">
+                        <div class="gatilho"
+                        >🎯 G
