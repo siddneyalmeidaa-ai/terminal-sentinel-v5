@@ -3,72 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V7.0 // MASSIVE DATA</title>
+    <title>SENTINEL V7.1 // BYPASS JSON ERROR</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
         .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 14px; }
         .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; border-left: 6px solid #00ff41; }
         .ticket { font-size: 12px; color: #888; text-transform: uppercase; }
         .price { font-size: 42px; font-weight: bold; margin: 5px 0; color: #fff; }
-        #log { font-family: monospace; color: #444; font-size: 10px; margin-top: 40px; text-align: center; }
+        #log { font-family: monospace; color: #444; font-size: 10px; margin-top: 40px; text-align: center; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL_V7.0</span>
-    <span id="timer">20:46:00</span>
+    <span>SENTINEL_V7.1</span>
+    <span id="timer">20:44:00</span>
 </div>
 
 <div id="display">
-    <div class="card" style="border-left-color: #333;">Conectando à infraestrutura Massive...</div>
+    <div class="card" style="border-left-color: #333;">Limpando túnel Massive...</div>
 </div>
 
-<div id="log">LOG: Validando nova API Key...</div>
+<div id="log">LOG: Iniciando sanitização de dados...</div>
 
 <script>
-    // NOVA IDENTIDADE MASSIVE [cite: 2026-02-28]
+    // CHAVE E TICKET [cite: 2026-02-28]
     const API_KEY = "XSL_vQBpLuJUV0QRE6Jdpo1e_pKXtdLT"; 
     const TICKET = "PETR4";
 
-    async function motorV7() {
+    async function motorV71() {
         const display = document.getElementById('display');
         const log = document.getElementById('log');
 
         try {
-            log.innerText = "SISTEMA: Consultando Massive Data...";
-
-            // A Massive usa uma estrutura de URL limpa para cotações [cite: 2026-02-28]
+            log.innerText = "SISTEMA: Solicitando texto puro da Massive...";
+            
+            // Endpoint Massive [cite: 2026-02-28]
             const url = `https://api.massive.com/v1/market/quote/${TICKET}?apikey=${API_KEY}`;
             
             const res = await fetch(url);
-            const data = await res.json();
+            const rawText = await res.text(); // Captura como texto para evitar erro de JSON imediato [cite: 2026-02-28]
 
-            if (data && data.price) {
-                const p = parseFloat(data.price).toFixed(2);
+            // Limpeza de caracteres não-JSON (Bypass para erro de posição 4) [cite: 2026-01-23, 2026-02-28]
+            const cleanText = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
+            const data = JSON.parse(cleanText);
+
+            if (data && (data.price || data.last)) {
+                const p = parseFloat(data.price || data.last).toFixed(2);
                 const c = data.change_percent || "0.00";
                 const cor = parseFloat(c) >= 0 ? "#00ff41" : "#ff3131";
 
                 display.innerHTML = `
                     <div class="card" style="border-left-color: ${cor}">
-                        <div class="ticket">${TICKET}.SAO</div>
+                        <div class="ticket">${TICKET} (DATA-CLEAN)</div>
                         <div class="price">R$ ${p}</div>
-                        <div style="color:${cor}; font-weight:bold;">Sincronizado: ${c}%</div>
+                        <div style="color:${cor}; font-weight:bold;">Variação: ${c}%</div>
                     </div>
                 `;
-                log.innerText = "SISTEMA: Massive Link estabelecido.";
+                log.innerText = "SISTEMA: Dados processados com sucesso.";
             } else {
-                display.innerHTML = '<div class="card" style="border-color:orange">Aguardando ativação da chave Massive...</div>';
-                log.innerText = "AVISO: A chave pode levar alguns minutos para propagar.";
+                display.innerHTML = '<div class="card" style="border-color:orange">Dados recebidos, mas formato incompleto.</div>';
+                log.innerText = "RESPOSTA: " + rawText;
             }
         } catch (e) {
-            display.innerHTML = '<div class="card" style="border-color:red">Erro de Conexão com Massive.</div>';
-            log.innerText = "ERRO: " + e.message;
+            display.innerHTML = '<div class="card" style="border-color:red">Erro crítico na limpeza do JSON.</div>';
+            log.innerText = "ERRO DETALHADO: " + e.message;
         }
     }
 
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(motorV7, 2000);
+    setTimeout(motorV71, 2000);
 </script>
 </body
     >
