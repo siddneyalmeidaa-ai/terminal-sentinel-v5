@@ -2,95 +2,100 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>SENTINEL V6.2 // BYPASS PROXY</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENTINEL V6.3 // OPERAÇÃO BYPASS</title>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; }
-        .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; border-left: 6px solid #00ff41; margin-bottom: 15px; }
-        .ticket { font-size: 14px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
-        .price { font-size: 38px; font-weight: bold; margin: 10px 0; }
-        .osc { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .news-box { background: #111; padding: 12px; border-radius: 8px; font-size: 12px; color: #aaa; border-top: 1px solid #222; line-height: 1.4; }
-        .label-news { color: #00ff41; font-size: 10px; font-weight: bold; display: block; margin-bottom: 5px; }
-        #log { font-family: monospace; color: #444; font-size: 11px; margin-top: 30px; border-top: 1px solid #111; padding-top: 10px; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
+        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 14px; letter-spacing: 1px; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; border-left: 6px solid #333; transition: 0.3s; }
+        .ticket { font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .price { font-size: 42px; font-weight: bold; margin: 5px 0; letter-spacing: -1px; }
+        .osc { font-size: 18px; font-weight: bold; }
+        .news-box { margin-top: 20px; background: #111; padding: 12px; border-radius: 8px; border-top: 1px solid #222; font-size: 12px; color: #aaa; line-height: 1.5; }
+        .label-news { color: #00ff41; font-size: 10px; font-weight: bold; display: block; margin-bottom: 8px; text-transform: uppercase; }
+        #status-log { font-family: monospace; color: #444; font-size: 10px; margin-top: 40px; text-align: center; border-top: 1px solid #111; padding-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL V6.2 // PROXY ACTIVE</span>
-    <span id="clock">20:25:00</span>
+    <span>SENTINEL_V6.3</span>
+    <span id="timer">20:27:00</span>
 </div>
 
-<div id="app">
-    <div class="card" style="border-left-color: #333;">Iniciando túnel de conexão...</div>
+<div id="display">
+    <div class="card">Sincronizando Túnel de Segurança...</div>
 </div>
 
-<div id="log">SISTEMA: Aguardando autorização de domínio...</div>
+<div id="status-log">LOG: Aguardando autorização da API...</div>
 
 <script>
-    // CONFIGURAÇÃO DE CHAVES
-    const KEY_PRICE = "BBA9X8Q14OFJIBRZ"; 
-    const KEY_NEWS = "3YfY2Nvp75kG9ANMx4vrDx";
-    const PROXY_URL = "https://api.allorigins.win/get?url=";
+    // INJEÇÃO DE CHAVES E PROXY
+    const KEY_COTACAO = "BBA9X8Q14OFJIBRZ"; 
+    const KEY_NOTICIAS = "3YfY2Nvp75kG9ANMx4vrDx";
+    const TUNEL = "https://corsproxy.io/?"; 
 
-    async function fetchData(url) {
-        const response = await fetch(PROXY_URL + encodeURIComponent(url));
-        const json = await response.json();
-        return JSON.parse(json.contents);
-    }
-
-    async function executar() {
-        const app = document.getElementById('app');
-        const log = document.getElementById('log');
-        const TICKET = "PETR4";
+    async function motor() {
+        const display = document.getElementById('display');
+        const log = document.getElementById('status-log');
+        const ATIVO = "PETR4";
 
         try {
-            log.innerText = `STATUS: Consultando ${TICKET} via Túnel Proxy...`;
+            log.innerText = "SISTEMA: Perfurando bloqueio via CORS-PROXY...";
 
-            // 1. CONSULTA DE COTAÇÃO [cite: 2026-02-28]
-            const urlPrice = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${TICKET}.SAO&apikey=${KEY_PRICE}`;
-            const dataP = await fetchData(urlPrice);
+            // 1. BUSCA COTAÇÃO [cite: 2026-02-28]
+            const urlPrice = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ATIVO}.SAO&apikey=${KEY_COTACAO}`;
+            const resP = await fetch(TUNEL + encodeURIComponent(urlPrice));
+            const dataP = await resP.json();
 
-            // 2. CONSULTA DE NOTÍCIAS
-            const urlNews = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${TICKET}&apikey=${KEY_NEWS}`;
-            const dataN = await fetchData(urlNews);
+            // 2. BUSCA NOTÍCIAS (Gatilho)
+            const urlNews = `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ATIVO}&apikey=${KEY_NOTICIAS}`;
+            const resN = await fetch(TUNEL + encodeURIComponent(urlNews));
+            const dataN = await resN.json();
 
-            if (dataP["Global Quote"]) {
-                const g = dataP["Global Quote"];
-                const preco = parseFloat(g["05. price"]).toFixed(2);
-                const osc = parseFloat(g["10. change percent"].replace('%','')).toFixed(2);
-                const cor = osc >= 0 ? "#00ff41" : "#ff3131";
+            if (dataP["Global Quote"] && dataP["Global Quote"]["05. price"]) {
+                const quote = dataP["Global Quote"];
+                const preco = parseFloat(quote["05. price"]).toFixed(2);
+                const oscilacao = parseFloat(quote["10. change percent"].replace('%','')).toFixed(2);
+                const cor = oscilacao >= 0 ? "#00ff41" : "#ff3131";
                 
-                // Pega o resumo da notícia
-                const resumo = dataN.feed && dataN.feed[0] ? dataN.feed[0].summary : "Sem alertas de notícias no momento.";
+                // Resumo da primeira notícia
+                const noticia = dataN.feed && dataN.feed[0] ? dataN.feed[0].summary : "Nenhum gatilho de notícia detectado no radar.";
 
-                app.innerHTML = `
+                display.innerHTML = `
                     <div class="card" style="border-left-color: ${cor}">
-                        <div class="ticket">${TICKET}.SAO</div>
+                        <div class="ticket">${ATIVO}.SAO</div>
                         <div class="price">R$ ${preco}</div>
-                        <div class="osc" style="color: ${cor}">${osc}%</div>
+                        <div class="osc" style="color: ${cor}">${oscilacao}%</div>
                         <div class="news-box">
-                            <span class="label-news">GATILHO DE MERCADO:</span>
-                            ${resumo.substring(0, 180)}...
+                            <span class="label-news">Gatilho de Notícia:</span>
+                            ${noticia.substring(0, 160)}...
                         </div>
                     </div>
                 `;
-                log.innerText = "SISTEMA: Dados integrados com sucesso via Proxy.";
-            } else if (dataP["Note"]) {
-                app.innerHTML = '<div class="card" style="border-color:orange">API em Cooldown (Aguarde 60s).</div>';
-                log.innerText = "AVISO: Limite de frequência atingido.";
-            } else {
-                app.innerHTML = '<div class="card" style="border-color:red">Erro na validação dos dados da API.</div>';
+                log.innerText = "SISTEMA: Conexão estabelecida e dados integrados.";
+            } 
+            else if (dataP["Note"]) {
+                display.innerHTML = '<div class="card" style="border-color:orange">Limite da API atingido. Aguardando 60s...</div>';
+                log.innerText = "AVISO: Cooldown ativo.";
+            }
+            else {
+                display.innerHTML = '<div class="card" style="border-color:red">Erro: Acesso negado pelo servidor Alpha Vantage.</div>';
+                log.innerText = "DETALHE: Verifique se a chave está correta.";
             }
         } catch (e) {
-            app.innerHTML = '<div class="card" style="border-color:red">Falha Crítica no Túnel de Conexão.</div>';
+            display.innerHTML = '<div class="card" style="border-color:red">Falha na rede: O Proxy não respondeu.</div>';
             log.innerText = "ERRO: " + e.message;
         }
     }
 
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(executar, 1500);
+    // Atualiza o relógio [cite: 2026-01-20]
+    setInterval(() => { 
+        document.getElementById('timer').innerText = new Date().toLocaleTimeString(); 
+    }, 1000);
+
+    // Inicia o motor
+    setTimeout(motor, 1500);
 </script>
 </bo
     dy>
