@@ -3,80 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL SENTINEL V5 // MATRIX</title>
+    <title>SENTINEL V5 // COMMAND CENTER</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #050505; color: #00ff41; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; }
-        .header { border-bottom: 2px solid #00ff41; margin-bottom: 20px; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; background: rgba(0, 20, 0, 0.9); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
-        th, td { border: 1px solid #004400; padding: 12px; text-align: left; font-size: 11px; }
-        th { background-color: #001100; color: #00ff41; text-transform: uppercase; }
-        .status-entra { color: #00ff41; font-weight: bold; text-shadow: 0 0 5px #00ff41; }
-        .status-pula { color: #ffcc00; }
-        .status-nao { color: #ff3300; }
-        .news-box { font-style: italic; color: #00ccff; max-width: 250px; }
-        .risk-high { color: #ff3300; font-weight: bold; background: rgba(50, 0, 0, 0.3); }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0.3; } }
+        :root { --neon-green: #00ff41; --neon-red: #ff3300; --neon-yellow: #ffcc00; --bg: #050505; }
+        body { background: var(--bg); color: var(--neon-green); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--neon-green); padding-bottom: 10px; margin-bottom: 30px; }
+        
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 8px; transition: 0.3s; text-align: center; }
+        .card:hover { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0,255,65,0.2); }
+        
+        .status-entra { border-top: 4px solid var(--neon-green); }
+        .status-pula { border-top: 4px solid var(--neon-yellow); }
+        .status-nao { border-top: 4px solid var(--neon-red); }
+
+        .ticket-name { font-size: 20px; font-weight: bold; display: block; }
+        .ipi-label { font-size: 12px; text-transform: uppercase; margin-top: 10px; display: block; }
+        
+        .chart-container { background: #0a0a0a; padding: 20px; border-radius: 12px; border: 1px solid #1a1a1a; }
+        .news-ticker { margin-top: 20px; background: #111; padding: 10px; border-left: 4px solid var(--neon-green); font-size: 13px; color: #00ccff; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1><span class="blink">●</span> TERMINAL SENTINEL V5 // SYDNEY OPERATIVE</h1>
-    <p>TIME: 17:24 | STATUS: BLINDADO | DATA SOURCE: 9-COLUMNS_JSON</p>
+    <div>
+        <h2 style="margin:0;">SENTINEL V5 // OPERATIVE DASHBOARD</h2>
+        <small>SYNC: ALPHA_VANTAGE_REALTIME</small>
+    </div>
+    <div style="text-align: right;">
+        <span id="clock">17:31:00</span><br>
+        <small>STATUS: BLINDADO</small>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Ticket</th>
-            <th>Gatilhos</th>
-            <th>Histórico 24h</th>
-            <th>Perf. 12M</th>
-            <th>Alerta Div.</th>
-            <th>Risco Pol.</th>
-            <th>IPI (Sinal)</th>
-            <th>Trava Din.</th>
-            <th>API KEY</th>
-        </tr>
-    </thead>
-    <tbody id="sentinel-body">
-        </tbody>
-</table>
+<div class="container">
+    <div class="grid-cards" id="cards-container">
+        </div>
+
+    <div class="chart-container">
+        <canvas id="sentinelChart"></canvas>
+        <div id="active-news" class="news-ticker">Selecione um ativo para ver o histórico 24h...</div>
+    </div>
+</div>
 
 <script>
-    async function loadSentinelData() {
-        try {
-            const response = await fetch('sentinel_data.json');
-            const data = await response.json();
-            const tableBody = document.getElementById('sentinel-body');
-            
-            tableBody.innerHTML = ""; 
+    async function initDashboard() {
+        const response = await fetch('sentinel_data.json');
+        const data = await response.json();
+        
+        const cardsCont = document.getElementById('cards-container');
+        const newsTicker = document.getElementById('active-news');
+        
+        // Criar Cards
+        data.forEach(item => {
+            const statusClass = item.semaforo.toLowerCase().replace(" ", "-");
+            const card = document.createElement('div');
+            card.className = `card status-${statusClass}`;
+            card.innerHTML = `
+                <span class="ticket-name">${item.ticket}</span>
+                <small>${item.trava} TRAVA</small>
+                <span class="ipi-label">${item.semaforo}</span>
+            `;
+            card.onclick = () => {
+                newsTicker.innerHTML = `<strong>${item.ticket} NEWS:</strong> ${item.hist_24h}`;
+            };
+            cardsCont.appendChild(card);
+        });
 
-            data.forEach(item => {
-                const statusClass = item.semaforo.toLowerCase().replace(" ", "-");
-                const riskClass = item.risco_pol === 'ALTO' ? 'risk-high' : '';
-                
-                let row = `<tr>
-                    <td><strong>${item.ticket}</strong></td>
-                    <td>${item.gatilhos}</td>
-                    <td class="news-box">${item.hist_24h}</td>
-                    <td>${item.perf_12m}</td>
-                    <td>${item.alerta_div}</td>
-                    <td class="${riskClass}">${item.risco_pol}</td>
-                    <td class="status-${statusClass}">${item.semaforo}</td>
-                    <td>${item.trava}</td>
-                    <td>${item.api_key.substring(0, 5)}***</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
-        } catch (error) {
-            console.error("ERRO CRÍTICO NA PASTA MÃE:", error);
-        }
+        // Criar Gráfico de Radar
+        const ctx = document.getElementById('sentinelChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: data.map(i => i.ticket),
+                datasets: [{
+                    label: 'Pontuação de Oportunidade (IPI)',
+                    data: data.map(i => i.semaforo === 'ENTRA' ? 10 : (i.semaforo === 'PULA' ? 5 : 2)),
+                    fill: true,
+                    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+                    borderColor: '#00ff41',
+                    pointBackgroundColor: '#00ff41'
+                }]
+            },
+            options: {
+                scales: { r: { angleLines: { color: '#222' }, grid: { color: '#222' }, pointLabels: { color: '#00ff41' }, ticks: { display: false } } },
+                plugins: { legend: { labels: { color: '#00ff41' } } }
+            }
+        });
     }
-    loadSentinelData();
+
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    initDashboard();
 </script>
 
 </body>
-</h
-  tml>
+
+</html>
