@@ -36,5 +36,38 @@
 
 <script>
     const API_KEY = 'BBA9X8Q14OFJIBRZ';
-    const TICKETS = ['VALE3.SAO', 'PETR4.SAO', 'ITUB4.SAO', '
-                     BB
+    const TICKETS = ['VALE3.SAO', 'PETR4.SAO', 'ITUB4.SAO', 'BBAS3.SAO', 'ABEV3.SAO', 'B3SA3.SAO', 'ELET3.SAO', 'WEGE3.SAO', 'RENT3.SAO', 'MGLU3.SAO'];
+
+    async function updateDashboard() {
+        const list = document.getElementById('asset-list');
+        let html = '';
+
+        for (const t of TICKETS) {
+            try {
+                const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${t}&apikey=${API_KEY}`);
+                const data = await res.json();
+                const q = data["Global Quote"];
+                
+                if (q) {
+                    const change = parseFloat(q["10. change percent"]);
+                    const color = change >= 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+                    html += `
+                        <div class="asset-card">
+                            <div><span class="ticker">${t.split('.')[0]}</span></div>
+                            <div class="price-info">
+                                <div style="color:${color}">${change.toFixed(2)}%</div>
+                                <div style="font-size:10px; color:#444">R$ ${parseFloat(q["05. price"]).toFixed(2)}</div>
+                            </div>
+                        </div>`;
+                }
+            } catch (e) { console.error(e); }
+        }
+        if(html) list.innerHTML = html;
+    }
+
+    updateDashboard();
+    setInterval(updateDashboard, 300000); // 5 min
+</script>
+</body>
+</
+    html>
