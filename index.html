@@ -62,15 +62,13 @@
                         <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
                     </div>`;
 
-                // LOGICA DE CAPTURA BLINDADA [cite: 2026-02-28]
                 fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
                     .then(data => {
-                        // Tenta ler de múltiplos formatos de resposta [cite: 2026-02-28]
                         let p = null;
-                        if (data.results && data.results[0]) p = data.results[0].regularMarketPrice;
+                        if (data && data.price) p = data.price;
+                        else if (data.results && data.results[0]) p = data.results[0].regularMarketPrice;
                         else if (data[0] && data[0].price) p = data[0].price;
-                        else if (data.price) p = data.price;
 
                         const el = document.getElementById(cardId);
                         if (p) {
