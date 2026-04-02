@@ -89,14 +89,13 @@
                     .then(data => {
                         if (data.price) {
                             document.getElementById(`price-${a.ticket}`).innerText = `R$ ${data.price.toFixed(2)}`;
-                            
                             const dayEl = document.getElementById(`day-${a.ticket}`);
                             dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
                             dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
                             
+                            // Atualização do campo de 12 meses
                             const perfEl = document.getElementById(`perf-${a.ticket}`);
-                            // Pegando o valor de performance que vem do novo Worker
-                            const val12m = data.perf12m || 0;
+                            const val12m = parseFloat(data.perf12m) || 0;
                             perfEl.innerText = (val12m >= 0 ? "+" : "") + val12m.toFixed(2) + "%";
                             perfEl.style.color = val12m >= 0 ? "#00ff41" : "#ff3131";
                         }
@@ -115,4 +114,4 @@
 </script>
 </body
     >
-    </html>
+</html>
