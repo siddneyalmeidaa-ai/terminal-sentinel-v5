@@ -32,7 +32,6 @@
 <div id="status-log">LOG: Ativando túnel Cloudflare Bridge...</div>
 
 <script>
-    // URL DO SEU MOTOR PESSOAL
     const motorURL = "https://snowy-paper-0f66.siddney-almeidaa.workers.dev";
 
     async function ignition() {
@@ -40,7 +39,6 @@
         const log = document.getElementById('status-log');
 
         try {
-            // LÊ OS AGENTES DO SEU JSON LOCAL [cite: 2026-02-28]
             const res = await fetch('sentinel_data.json');
             if (!res.ok) throw new Error("Erro ao ler JSON local");
             const agentes = await res.json();
@@ -64,12 +62,16 @@
                         <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
                     </div>`;
 
-                // CHAMADA VIA TÚNEL COM TRATAMENTO DE DADOS [cite: 2026-02-28]
+                // LOGICA DE CAPTURA BLINDADA [cite: 2026-02-28]
                 fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
                     .then(data => {
-                        // Captura o preço independente do formato da API [cite: 2026-02-28]
-                        const p = data.results ? data.results[0].regularMarketPrice : (data[0] ? data[0].price : null);
+                        // Tenta ler de múltiplos formatos de resposta [cite: 2026-02-28]
+                        let p = null;
+                        if (data.results && data.results[0]) p = data.results[0].regularMarketPrice;
+                        else if (data[0] && data[0].price) p = data[0].price;
+                        else if (data.price) p = data.price;
+
                         const el = document.getElementById(cardId);
                         if (p) {
                             el.innerText = `R$ ${p.toFixed(2)}`;
@@ -90,10 +92,9 @@
         }
     }
 
-    // RELÓGIO E INÍCIO DO SISTEMA [cite: 2026-02-28]
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
     setTimeout(ignition, 500);
 </script>
-</body>
-    
+</body
+    >
 </html>
