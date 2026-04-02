@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V8.6 // FINAL PACT</title>
+    <title>SENTINEL V8.8 // FÊNIX PRIME</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; }
         .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; transition: 0.3s; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; }
         .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .ticket-name { font-size: 18px; font-weight: 900; color: #fff; }
         .price { font-size: 32px; font-weight: bold; margin: 5px 0; color: #00ff41; }
@@ -21,68 +21,75 @@
 <body>
 
 <div class="header">
-    <span>SENTINEL_V8.6 // FÊNIX PRIME</span>
+    <span>SENTINEL_V8.8 // MOTOR LIGADO</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card">Sincronizando dados locais...</div>
+    <div class="card" style="border-color:#333">Aguardando Sincronia...</div>
 </div>
 
-<div id="status-log">LOG: Aguardando sinal...</div>
+<div id="status-log">LOG: Iniciando túnel de dados...</div>
 
 <script>
-    async function executarSentinel() {
+    async function ignition() {
         const painel = document.getElementById('painel');
         const log = document.getElementById('status-log');
 
         try {
-            // 1. LER O JSON LOCAL PRIMEIRO
+            // 1. Carrega o seu JSON local (Agentes B3)
             const res = await fetch('sentinel_data.json');
-            if (!res.ok) throw new Error("Falha ao acessar sentinel_data.json");
+            if (!res.ok) throw new Error("Erro ao ler sentinel_data.json");
             const agentes = await res.json();
             
-            painel.innerHTML = ''; // Limpa o carregamento
+            painel.innerHTML = ''; 
 
-            // 2. DESENHAR OS CARDS IMEDIATAMENTE [cite: 2026-02-28]
             for (let a of agentes) {
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
-                
                 const cardId = `price-${a.ticket}`;
+                
+                // 2. Renderiza a estrutura visual do card
                 painel.innerHTML += `
                     <div class="card" style="border-left-color: ${cor}">
                         <div class="ticket-row">
                             <span class="ticket-name">${a.ticket}</span>
                             <span class="status-pill" style="color: ${cor}; border: 1px solid ${cor}">${a.semaforo}</span>
                         </div>
-                        <div class="price" id="${cardId}">---</div>
-                        
+                        <div class="price" id="${cardId}">SINC...</div>
                         <div class="label">Gatilhos</div>
                         <div class="value">${a.gatilhos}</div>
-                        
                         <div class="label">Operacional</div>
                         <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
                     </div>`;
 
-                // 3. BUSCAR PREÇO EM SEGUNDO PLANO (Yahoo Finance Bridge) [cite: 2026-02-28]
-                fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticket}.SA`)
+                // 3. Injeta o preço usando o PROXY AllOrigins (Fura o bloqueio CORS)
+                const apiURL = `https://brasilapi.com.br/api/quote/v1/${a.ticket}`;
+                const proxyURL = `https://api.allorigins.win/get?url=${encodeURIComponent(apiURL)}`;
+
+                fetch(proxyURL)
                     .then(r => r.json())
-                    .then(data => {
-                        const p = data.chart.result[0].meta.regularMarketPrice;
-                        document.getElementById(cardId).innerText = `R$ ${p.toFixed(2)}`;
+                    .then(proxyData => {
+                        const data = JSON.parse(proxyData.contents);
+                        const p = data.regularMarketPrice;
+                        document.getElementById(cardId).innerText = p ? `R$ ${p.toFixed(2)}` : "FECHADO";
                     })
-                    .catch(() => { document.getElementById(cardId).innerText = "OFFLINE"; });
+                    .catch(() => {
+                        document.getElementById(cardId).innerText = "ERRO API";
+                        document.getElementById(cardId).style.color = "#ff3131";
+                    });
             }
-            log.innerText = "SISTEMA: " + agentes.length + " agentes carregados do JSON.";
+            log.innerText = "SISTEMA: " + agentes.length + " agentes operando com túnel de dados.";
         } catch (err) {
-            log.innerText = "ERRO CRÍTICO: " + err.message;
-            painel.innerHTML = `<div class="card" style="border-color:red">Erro ao carregar agentes. Verifique o arquivo JSON.</div>`;
+            log.innerText = "ERRO NA IGNIÇÃO: " + err.message;
+            painel.innerHTML = `<div class="card" style="border-color:red">Falha Crítica: ${err.message}</div>`;
         }
     }
 
+    // Relógio em tempo real
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(executarSentinel, 500);
+    // Início automático
+    setTimeout(ignition, 500);
 </script>
-</body>
-
+</body
+    >
 </html>
