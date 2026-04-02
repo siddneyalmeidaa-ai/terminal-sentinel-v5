@@ -1,50 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V10.0 // FÊNIX PRIME</title>
+    <title>SENTINEL V10.0 // AUTO_DATA</title>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; overflow-x: hidden; }
-        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; position: relative; }
-        .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .ticket-name { font-size: 18px; font-weight: 900; color: #fff; }
-        .price { font-size: 32px; font-weight: bold; margin: 5px 0; color: #00ff41; display: flex; align-items: center; gap: 8px; }
-        .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: #1a1a1a; }
-        
-        /* TICKER DE NOTÍCIAS AUTOMÁTICO */
-        .label { font-size: 9px; color: #444; text-transform: uppercase; font-weight: bold; margin-top: 10px; border-top: 1px solid #111; padding-top: 5px; }
-        .news-container { background: #050505; border-radius: 4px; padding: 5px; margin-top: 5px; overflow: hidden; white-space: nowrap; }
-        .news-scroll { display: inline-block; font-size: 10px; color: #00ff41; font-family: monospace; animation: marquee 20s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-150%); } }
-        
-        .pulse { width: 8px; height: 8px; background: #00ff41; border-radius: 50%; display: inline-block; animation: pulse-animation 1.5s infinite; }
-        @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        
-        /* GRID DE DADOS OPERACIONAIS */
-        .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-        .value { font-size: 11px; color: #999; }
-        .data-label { font-size: 8px; color: #444; display: block; }
-        #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 40px; text-align: center; }
+        :root { --bg: #050505; --card: #111; --green: #00ff41; --yellow: #ffaa00; --red: #ff3131; --text: #eee; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; padding: 10px; }
+        header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--green); padding-bottom: 5px; margin-bottom: 15px; font-size: 12px; }
+        #painel { display: grid; gap: 10px; }
+        .card { background: var(--card); border-left: 4px solid; padding: 15px; position: relative; overflow: hidden; border-radius: 4px; }
+        .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .ticket-name { font-size: 20px; font-weight: bold; }
+        .status-pill { font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .price { font-size: 28px; font-weight: bold; color: var(--green); margin: 10px 0; display: flex; align-items: center; }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .label { font-size: 10px; color: #666; text-transform: uppercase; margin-top: 10px; }
+        .news-container { background: #000; padding: 5px; margin: 5px 0; height: 20px; overflow: hidden; white-space: nowrap; border: 1px solid #222; }
+        .news-scroll { display: inline-block; animation: scroll 15s linear infinite; font-size: 12px; color: var(--green); }
+        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
+        .data-label { font-size: 8px; color: #555; display: block; }
+        .value { font-size: 12px; font-weight: bold; }
+        footer { margin-top: 20px; text-align: center; font-size: 10px; color: #444; border-top: 1px solid #222; padding-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header">
+<header>
     <span>SENTINEL_V10.0 // AUTO_DATA</span>
-    <span id="timer">00:00:00</span>
-</div>
+    <span id="clock">00:00:00</span>
+</header>
 
-<div id="painel" class="grid">
-    <div class="card" style="border-color:#333">Sincronizando 10 Agentes...</div>
-</div>
+<div id="painel">
+    </div>
 
-<div id="status-log">LOG: Handshake Cloudflare Bridge...</div>
+<footer id="status-log">SISTEMA INICIANDO...</footer>
 
 <script>
-    const motorURL = "https://snowy-paper-0f66.siddney-almeidaa.workers.dev";
+    // 1. UPDATE THIS URL WITH YOUR WORKER LINK
+    const motorURL = "https://snowy-paper-bccf.sydney.workers.dev/"; 
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
+    }
+    setInterval(updateClock, 1000);
 
     async function ignition() {
         const painel = document.getElementById('painel');
@@ -55,12 +57,9 @@
             const agentes = await res.json();
             painel.innerHTML = ''; 
 
-            for (let a of agentes) {
+            // 2. RENDER CARD STRUCTURE
+            agentes.forEach(a => {
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
-                const cardId = `price-${a.ticket}`;
-                const dayId = `day-${a.ticket}`;
-                const perfId = `perf-${a.ticket}`;
-                
                 painel.innerHTML += `
                     <div class="card" style="border-left-color: ${cor}">
                         <div class="ticket-row">
@@ -68,50 +67,53 @@
                             <span class="status-pill" style="color: ${cor}; border: 1px solid ${cor}">${a.semaforo}</span>
                         </div>
                         <div class="price">
-                            <span class="pulse" style="background-color: ${cor}"></span>
-                            <span id="${cardId}">---</span>
+                            <span class="pulse" style="background-color:${cor}"></span>
+                            <span id="price-${a.ticket}">SYNCING...</span>
                         </div>
-                        <div class="label">Contexto e Gatilhos</div>
+                        <div class="label">Context and Triggers</div>
                         <div class="news-container">
-                            <div class="news-scroll">LIVE: ${a.hist_24h || "Aguardando sinal..."} // FOCO: ${a.gatilhos}</div>
+                            <div class="news-scroll">LIVE: ${a.hist_24h} // FOCUS: ${a.gatilhos}</div>
                         </div>
                         <div class="op-grid">
-                            <div>
-                                <span class="data-label">OSCILAÇÃO DIA</span>
-                                <span class="value" id="${dayId}">0.00%</span>
-                            </div>
-                            <div>
-                                <span class="data-label">PERF. 12 MESES</span>
-                                <span class="value" id="${perfId}">0.00%</span>
-                            </div>
+                            <div><span class="data-label">DAY VARIATION</span><span class="value" id="day-${a.ticket}">0.00%</span></div>
+                            <div><span id="perf-label-${a.ticket}" class="data-label">12 MONTH PERF.</span><span class="value" id="perf-${a.ticket}">0.00%</span></div>
                         </div>
                     </div>`;
+            });
 
-                // CHAMADA AO MOTOR COM NOVOS DADOS [cite: 2026-02-28]
+            // 3. FETCH DATA IN SEQUENCE (350ms DELAY)
+            for (let i = 0; i < agentes.length; i++) {
+                await new Promise(r => setTimeout(r, 350));
+                const a = agentes[i];
+                
                 fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.price) {
-                            document.getElementById(cardId).innerText = `R$ ${data.price.toFixed(2)}`;
+                            document.getElementById(`price-${a.ticket}`).innerText = `R$ ${data.price.toFixed(2)}`;
                             
-                            const dayEl = document.getElementById(dayId);
+                            const dayEl = document.getElementById(`day-${a.ticket}`);
                             dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
                             dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
 
-                            const perfEl = document.getElementById(perfId);
+                            const perfEl = document.getElementById(`perf-${a.ticket}`);
                             perfEl.innerText = (data.perf12m >= 0 ? "+" : "") + data.perf12m.toFixed(2) + "%";
                             perfEl.style.color = data.perf12m >= 0 ? "#00ff41" : "#ff3131";
                         }
                     })
-                    .catch(() => { document.getElementById(cardId).innerText = "OFFLINE"; });
+                    .catch(() => { 
+                        document.getElementById(`price-${a.ticket}`).innerText = "OFFLINE"; 
+                    });
             }
-            log.innerText = "SISTEMA OPERACIONAL: " + agentes.length + " AGENTES ATIVOS.";
-        } catch (err) { log.innerText = "ERRO: " + err.message; }
+            log.innerText = `SYSTEM OPERATIONAL: ${agentes.length} AGENTS ACTIVE.`;
+        } catch (e) { 
+            log.innerText = "CRITICAL ERROR: " + e.message; 
+        }
     }
 
-    setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(ignition, 500);
+    window.onload = ignition;
 </script>
-</body
-    >
+
+</bo
+    dy>
 </html>
