@@ -93,7 +93,6 @@
                             dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
                             dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
                             
-                            // Atualização do campo de 12 meses
                             const perfEl = document.getElementById(`perf-${a.ticket}`);
                             const val12m = parseFloat(data.perf12m) || 0;
                             perfEl.innerText = (val12m >= 0 ? "+" : "") + val12m.toFixed(2) + "%";
