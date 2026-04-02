@@ -1,32 +1,72 @@
 [
   {
     "ticket": "VALE3",
-    "gatilhos": "Minério China / Infraestrutura",
-    "hist_24h": "[01/04] Minério subiu 1.2% em Dalian",
-    "perf_12m": "-14.20%",
     "semaforo": "ENTRA",
+    "gatilhos": "Minério China / Infraestrutura",
     "trava": "-50%",
-    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
-    "api_key_news": "BBA9X8Q14OFJIBRZ"
+    "hist_24h": "[01/04] Minério subiu 1.2% em Dalian. Demanda firme."
   },
   {
     "ticket": "PETR4",
-    "gatilhos": "Brent / Política / Dividendos",
-    "hist_24h": "[31/03] Brent US$ 84; Incerteza diretoria",
-    "perf_12m": "+28.50%",
     "semaforo": "PULA",
+    "gatilhos": "Brent / Política / Dividendos",
     "trava": "-75%",
-    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
-    "api_key_news": "BBA9X8Q14OFJIBRZ"
+    "hist_24h": "[01/04] Petróleo Brent recuou com aumento de estoques nos EUA."
   },
   {
     "ticket": "ITUB4",
-    "gatilhos": "SELIC / Inadimplência",
-    "hist_24h": "[01/04] Relatório indica lucros resilientes",
-    "perf_12m": "+18.40%",
     "semaforo": "ENTRA",
+    "gatilhos": "SELIC / Inadimplência",
     "trava": "-50%",
-    "api_key_cotacao": "3YfY2Nvp75kG9ANMx4vrDx",
-    "api_key_news": "BBA9X8Q14OFJIBRZ"
+    "hist_24h": "[01/04] Resultado trimestral acima do esperado. ROE sólido."
+  },
+  {
+    "ticket": "BBDC4",
+    "semaforo": "ENTRA",
+    "gatilhos": "Crédito / Recuperação Judicial",
+    "trava": "-40%",
+    "hist_24h": "[01/04] Reestruturação de carteira de crédito em andamento."
+  },
+  {
+    "ticket": "ABEV3",
+    "semaforo": "PULA",
+    "gatilhos": "Consumo / Commodities / Câmbio",
+    "trava": "-30%",
+    "hist_24h": "[01/04] Pressão nos custos de alumínio afeta margens."
+  },
+  {
+    "ticket": "MGLU3",
+    "semaforo": "NÃO ENTRA",
+    "gatilhos": "Juros / Varejo / E-commerce",
+    "trava": "-90%",
+    "hist_24h": "[01/04] Volatilidade alta devido à curva de juros futura."
+  },
+  {
+    "ticket": "WEGE3",
+    "semaforo": "ENTRA",
+    "gatilhos": "Exportação / Motores / Energia",
+    "trava": "-20%",
+    "hist_24h": "[01/04] Novos contratos de energia eólica na Europa."
+  },
+  {
+    "ticket": "BBAS3",
+    "semaforo": "ENTRA",
+    "gatilhos": "Agro / Dividendos / Governo",
+    "trava": "-45%",
+    "hist_24h": "[01/04] Safra recorde impulsiona crédito rural."
+  },
+  {
+    "ticket": "RENT3",
+    "semaforo": "PULA",
+    "gatilhos": "Frota / Semi-novos / Turismo",
+    "trava": "-55%",
+    "hist_24h": "[01/04] Renovação de frota impactada por preços de usados."
+  },
+  {
+    "ticket": "ELET3",
+    "semaforo": "ENTRA",
+    "gatilhos": "Privatização / Energia / Chuvas",
+    "trava": "-40%",
+    "hist_24h": "[01/04] Níveis dos reservatórios favoráveis para geração."
   }
 ]
