@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V9.1 // FÊNIX PRIME</title>
+    <title>SENTINEL V10.0 // FÊNIX PRIME</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; overflow-x: hidden; }
         .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; }
@@ -14,28 +14,31 @@
         .price { font-size: 32px; font-weight: bold; margin: 5px 0; color: #00ff41; display: flex; align-items: center; gap: 8px; }
         .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: #1a1a1a; }
         
-        /* NOVO: NEWS TICKER [cite: 2026-02-28] */
+        /* TICKER DE NOTÍCIAS AUTOMÁTICO */
         .label { font-size: 9px; color: #444; text-transform: uppercase; font-weight: bold; margin-top: 10px; border-top: 1px solid #111; padding-top: 5px; }
         .news-container { background: #050505; border-radius: 4px; padding: 5px; margin-top: 5px; overflow: hidden; white-space: nowrap; }
-        .news-scroll { display: inline-block; font-size: 10px; color: #00ff41; font-family: monospace; animation: marquee 15s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .news-scroll { display: inline-block; font-size: 10px; color: #00ff41; font-family: monospace; animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-150%); } }
         
         .pulse { width: 8px; height: 8px; background: #00ff41; border-radius: 50%; display: inline-block; animation: pulse-animation 1.5s infinite; }
         @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         
-        .value { font-size: 11px; color: #999; margin-top: 2px; }
+        /* GRID DE DADOS OPERACIONAIS */
+        .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .value { font-size: 11px; color: #999; }
+        .data-label { font-size: 8px; color: #444; display: block; }
         #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL_V9.1 // LIVE FEED</span>
+    <span>SENTINEL_V10.0 // AUTO_DATA</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card" style="border-color:#333">Injetando Live Feed...</div>
+    <div class="card" style="border-color:#333">Sincronizando 10 Agentes...</div>
 </div>
 
 <div id="status-log">LOG: Handshake Cloudflare Bridge...</div>
@@ -49,14 +52,14 @@
 
         try {
             const res = await fetch('sentinel_data.json');
-            if (!res.ok) throw new Error("Erro ao ler JSON local");
             const agentes = await res.json();
-            
             painel.innerHTML = ''; 
 
             for (let a of agentes) {
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
                 const cardId = `price-${a.ticket}`;
+                const dayId = `day-${a.ticket}`;
+                const perfId = `perf-${a.ticket}`;
                 
                 painel.innerHTML += `
                     <div class="card" style="border-left-color: ${cor}">
@@ -66,43 +69,49 @@
                         </div>
                         <div class="price">
                             <span class="pulse" style="background-color: ${cor}"></span>
-                            <span id="${cardId}">BUSCANDO...</span>
+                            <span id="${cardId}">---</span>
                         </div>
-                        <div class="label">Últimas 24h // Gatilhos</div>
+                        <div class="label">Contexto e Gatilhos</div>
                         <div class="news-container">
-                            <div class="news-scroll">LIVE: ${a.hist_24h} // FOCO: ${a.gatilhos}</div>
+                            <div class="news-scroll">LIVE: ${a.hist_24h || "Aguardando sinal..."} // FOCO: ${a.gatilhos}</div>
                         </div>
-                        <div class="label">Operacional</div>
-                        <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
+                        <div class="op-grid">
+                            <div>
+                                <span class="data-label">OSCILAÇÃO DIA</span>
+                                <span class="value" id="${dayId}">0.00%</span>
+                            </div>
+                            <div>
+                                <span class="data-label">PERF. 12 MESES</span>
+                                <span class="value" id="${perfId}">0.00%</span>
+                            </div>
+                        </div>
                     </div>`;
 
+                // CHAMADA AO MOTOR COM NOVOS DADOS [cite: 2026-02-28]
                 fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
                     .then(data => {
-                        let p = data.price || (data.results && data.results[0].regularMarketPrice) || (data[0] && data[0].price);
-                        const el = document.getElementById(cardId);
-                        if (p) {
-                            el.innerText = `R$ ${p.toFixed(2)}`;
-                            el.style.color = "#00ff41";
-                        } else {
-                            el.innerText = "SEM SINAL";
+                        if (data.price) {
+                            document.getElementById(cardId).innerText = `R$ ${data.price.toFixed(2)}`;
+                            
+                            const dayEl = document.getElementById(dayId);
+                            dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
+                            dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
+
+                            const perfEl = document.getElementById(perfId);
+                            perfEl.innerText = (data.perf12m >= 0 ? "+" : "") + data.perf12m.toFixed(2) + "%";
+                            perfEl.style.color = data.perf12m >= 0 ? "#00ff41" : "#ff3131";
                         }
                     })
-                    .catch(() => {
-                        const el = document.getElementById(cardId);
-                        el.innerText = "ERRO TÚNEL";
-                        el.style.color = "#ff3131";
-                    });
+                    .catch(() => { document.getElementById(cardId).innerText = "OFFLINE"; });
             }
-            log.innerText = "SISTEMA: " + agentes.length + " agentes operando via Cloudflare Bridge.";
-        } catch (err) {
-            log.innerText = "ERRO NA IGNIÇÃO: " + err.message;
-        }
+            log.innerText = "SISTEMA OPERACIONAL: " + agentes.length + " AGENTES ATIVOS.";
+        } catch (err) { log.innerText = "ERRO: " + err.message; }
     }
 
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
     setTimeout(ignition, 500);
 </script>
-</body>
-    
+</body
+    >
 </html>
