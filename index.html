@@ -29,10 +29,10 @@
     <div class="card" style="border-color:#333">Sincronizando com Cloudflare...</div>
 </div>
 
-<div id="status-log">LOG: Ativando túnel snowy-paper-0f66...</div>
+<div id="status-log">LOG: Ativando túnel Cloudflare Bridge...</div>
 
 <script>
-    // ESTA É A URL DO SEU WORKER QUE VOCÊ CRIOU
+    // URL DO SEU MOTOR PESSOAL
     const motorURL = "https://snowy-paper-0f66.siddney-almeidaa.workers.dev";
 
     async function ignition() {
@@ -40,6 +40,7 @@
         const log = document.getElementById('status-log');
 
         try {
+            // LÊ OS AGENTES DO SEU JSON LOCAL [cite: 2026-02-28]
             const res = await fetch('sentinel_data.json');
             if (!res.ok) throw new Error("Erro ao ler JSON local");
             const agentes = await res.json();
@@ -63,12 +64,12 @@
                         <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
                     </div>`;
 
-                // CHAMADA VIA TÚNEL CLOUDFLARE (SEM ERRO API) [cite: 2026-02-28]
+                // CHAMADA VIA TÚNEL COM TRATAMENTO DE DADOS [cite: 2026-02-28]
                 fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
                     .then(data => {
-                        // Verifica se o dado veio da BrazilAPI via Worker [cite: 2026-02-28]
-                        const p = data.regularMarketPrice;
+                        // Captura o preço independente do formato da API [cite: 2026-02-28]
+                        const p = data.results ? data.results[0].regularMarketPrice : (data[0] ? data[0].price : null);
                         const el = document.getElementById(cardId);
                         if (p) {
                             el.innerText = `R$ ${p.toFixed(2)}`;
@@ -89,6 +90,7 @@
         }
     }
 
+    // RELÓGIO E INÍCIO DO SISTEMA [cite: 2026-02-28]
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
     setTimeout(ignition, 500);
 </script>
