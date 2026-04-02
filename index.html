@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V8.4 // DASHBOARD B3</title>
+    <title>SENTINEL V8.5 // DASHBOARD FINAL</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; }
-        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .card { background: #0d0d0d; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; position: relative; overflow: hidden; }
+        .card { background: #0d0d0d; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; }
         .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .ticket-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+        .ticket-name { font-size: 16px; font-weight: 800; color: #fff; }
         .price { font-size: 28px; font-weight: bold; margin: 2px 0; color: #00ff41; }
-        .status-pill { font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 900; background: #1a1a1a; }
+        .status-pill { font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 900; background: #1a1a1a; border: 1px solid #444; }
         .label { font-size: 10px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: 8px; }
         .value { font-size: 11px; color: #aaa; margin-bottom: 4px; }
         #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 30px; text-align: center; }
@@ -21,24 +21,26 @@
 <body>
 
 <div class="header">
-    <span>SENTINEL_V8.4 // OPERAÇÃO ATIVA</span>
+    <span>SENTINEL_V8.5 // STATUS ATIVO</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card">Iniciando renderização de cards...</div>
+    <div class="card" style="border-color:#333">Aguardando Sincronia...</div>
 </div>
 
-<div id="status-log">SISTEMA: Sincronia estável.</div>
+<div id="status-log">SISTEMA: Conectando...</div>
 
 <script>
-    async function renderizarCards() {
+    async function rodarSentinel() {
         const painel = document.getElementById('painel');
         const log = document.getElementById('status-log');
 
         try {
             const res = await fetch('sentinel_data.json');
+            if (!res.ok) throw new Error("Erro ao ler JSON local.");
             const agentes = await res.json();
+            
             painel.innerHTML = ''; 
 
             for (let a of agentes) {
@@ -46,38 +48,31 @@
                     const apiRes = await fetch(`https://brasilapi.com.br/api/quote/v1/${a.ticket}`);
                     const data = await apiRes.json();
                     
-                    const preco = data.regularMarketPrice ? `R$ ${data.regularMarketPrice.toFixed(2)}` : "PENDENTE";
-                    const corSemaforo = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
+                    const preco = data.regularMarketPrice ? `R$ ${data.regularMarketPrice.toFixed(2)}` : "R$ 0,00";
+                    const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
                     
                     painel.innerHTML += `
-                        <div class="card" style="border-left-color: ${corSemaforo}">
+                        <div class="card" style="border-left-color: ${cor}">
                             <div class="ticket-row">
                                 <span class="ticket-name">${a.ticket}</span>
-                                <span class="status-pill" style="color: ${corSemaforo}; border: 1px solid ${corSemaforo}">${a.semaforo}</span>
+                                <span class="status-pill" style="color: ${cor}; border-color: ${cor}">${a.semaforo}</span>
                             </div>
                             <div class="price">${preco}</div>
-                            
-                            <div class="label">Gatilhos / Tese</div>
+                            <div class="label">Gatilhos</div>
                             <div class="value">${a.gatilhos}</div>
-                            
                             <div class="label">Análise Técnica</div>
-                            <div class="value">Trava: ${a.trava} | Perf. 12m: ${a.perf_12m}</div>
-                            
-                            <div class="label">Histórico 24h</div>
-                            <div class="value" style="font-style: italic;">${a.hist_24h}</div>
-                        </div>
-                    `;
-                } catch (err) { console.error(err); }
+                            <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
+                        </div>`;
+                } catch (e) { console.log("Erro no ticket: " + a.ticket); }
             }
-            log.innerText = "SISTEMA: " + agentes.length + " agentes operando em tempo real.";
-        } catch (e) {
-            log.innerText = "ERRO: " + e.message;
+            log.innerText = "SISTEMA: " + agentes.length + " agentes sincronizados.";
+        } catch (err) {
+            log.innerText = "ERRO: " + err.message;
         }
     }
 
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(renderizarCards, 500);
+    setTimeout(rodarSentinel, 500);
 </script>
 </body>
-<
-    /html>
+</html>
