@@ -39,7 +39,7 @@
 <footer id="status-log">INICIALIZANDO MOTOR...</footer>
 
 <script>
-    // ⚠️ COLOQUE O LINK DO SEU WORKER ABAIXO
+    // URL do seu Worker no Cloudflare [cite: 2026-02-28]
     const motorURL = "https://snowy-paper-bccf.sydney.workers.dev/"; 
 
     function updateClock() {
@@ -53,11 +53,12 @@
         const log = document.getElementById('status-log');
 
         try {
+            // Carrega a lista de tickets do seu arquivo JSON [cite: 2026-02-28]
             const res = await fetch('sentinel_data.json');
             const agentes = await res.json();
             painel.innerHTML = ''; 
 
-            // 1. Monta a estrutura visual dos cards primeiro
+            // 1. Gera a interface visual para cada agente [cite: 2026-02-28]
             agentes.forEach(a => {
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
                 painel.innerHTML += `
@@ -81,5 +82,38 @@
                     </div>`;
             });
 
-            // 2. Busca os dados um por um com i
-            ntervalo
+            // 2. Busca dados na API em sequência (350ms de intervalo) [cite: 2026-01-23, 2026-02-28]
+            for (let i = 0; i < agentes.length; i++) {
+                await new Promise(r => setTimeout(r, 350));
+                const a = agentes[i];
+                
+                fetch(`${motorURL}?ticket=${a.ticket}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.price) {
+                            document.getElementById(`price-${a.ticket}`).innerText = `R$ ${data.price.toFixed(2)}`;
+                            
+                            const dayEl = document.getElementById(`day-${a.ticket}`);
+                            dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
+                            dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
+
+                            const perfEl = document.getElementById(`perf-${a.ticket}`);
+                            perfEl.innerText = (data.perf12m >= 0 ? "+" : "") + data.perf12m.toFixed(2) + "%";
+                            perfEl.style.color = data.perf12m >= 0 ? "#00ff41" : "#ff3131";
+                        }
+                    })
+                    .catch(() => { 
+                        document.getElementById(`price-${a.ticket}`).innerText = "SINAL FRACO"; 
+                    });
+            }
+            log.innerText = `SISTEMA OPERACIONAL: ${agentes.length} AGENTES ATIVOS.`;
+        } catch (e) { 
+            log.innerText = "ERRO NA CARGA: " + e.message; 
+        }
+    }
+
+    window.onload = ignition;
+</script>
+</bod
+    y>
+</html>
