@@ -23,6 +23,7 @@
         .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
         .data-label { font-size: 8px; color: #555; display: block; }
         .value { font-size: 12px; font-weight: bold; }
+        .trava-tag { font-size: 9px; background: #222; color: #aaa; padding: 2px 4px; border-radius: 3px; margin-left: 5px; }
         footer { margin-top: 20px; text-align: center; font-size: 10px; color: #444; border-top: 1px solid #222; padding-top: 10px; }
     </style>
 </head>
@@ -38,7 +39,7 @@
 <footer id="status-log">INICIALIZANDO MOTOR...</footer>
 
 <script>
-    // URL CORRETA DO SEU WORKER (AJUSTADA)
+    // URL DO SEU WORKER REAL (SYNC 0f66)
     const motorURL = "https://snowy-paper-0f66.siddney-almeidaa.workers.dev/"; 
 
     function updateClock() {
@@ -52,8 +53,9 @@
         const log = document.getElementById('status-log');
 
         try {
-            // Carrega os dados dos agentes
+            // Carrega a lista de 10 agentes do JSON [cite: 2026-02-28]
             const res = await fetch('sentinel_data.json');
+            if (!res.ok) throw new Error("Arquivo JSON não encontrado");
             const agentes = await res.json();
             painel.innerHTML = ''; 
 
@@ -62,7 +64,7 @@
                 painel.innerHTML += `
                     <div class="card" style="border-left-color: ${cor}">
                         <div class="ticket-row">
-                            <span class="ticket-name">${a.ticket}</span>
+                            <span class="ticket-name">${a.ticket} <span class="trava-tag">T: ${a.trava}</span></span>
                             <span class="status-pill" style="color: ${cor}; border: 1px solid ${cor}">${a.semaforo}</span>
                         </div>
                         <div class="price">
@@ -71,7 +73,7 @@
                         </div>
                         <div class="label">Contexto e Gatilhos</div>
                         <div class="news-container">
-                            <div class="news-scroll">LIVE: ${a.hist_24h} // FOCO: ${a.gatilhos}</div>
+                            <div class="news-scroll">${a.hist_24h} // FOCO: ${a.gatilhos}</div>
                         </div>
                         <div class="op-grid">
                             <div><span class="data-label">OSCILAÇÃO DIA</span><span class="value" id="day-${a.ticket}">0.00%</span></div>
@@ -80,7 +82,7 @@
                     </div>`;
             });
 
-            // Busca dados com intervalo de 350ms
+            // Busca dados um a um (intervalo 350ms) [cite: 2026-01-23]
             for (let i = 0; i < agentes.length; i++) {
                 await new Promise(r => setTimeout(r, 350));
                 const a = agentes[i];
@@ -104,5 +106,14 @@
                         document.getElementById(`price-${a.ticket}`).innerText = "SINAL FRACO"; 
                     });
             }
-       
-    log.
+            log.innerText = `SISTEMA OPERACIONAL: ${agentes.length} AGENTES ATIVOS.`;
+        } catch (e) { 
+            log.innerText = "ERRO NA CARGA: " + e.message; 
+        }
+    }
+
+    window.onload = ignition;
+</script>
+</bod
+    y>
+</html>
