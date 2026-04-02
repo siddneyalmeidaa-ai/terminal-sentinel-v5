@@ -17,26 +17,8 @@
         .pulse { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .label { font-size: 10px; color: #666; text-transform: uppercase; margin-top: 10px; }
-        
-        /* AJUSTE NO HISTÓRICO: Aumentando altura e visibilidade [cite: 2026-01-23] */
-        .news-container { 
-            background: #000; 
-            padding: 8px; 
-            margin: 10px 0; 
-            height: 35px; 
-            overflow: hidden; 
-            white-space: nowrap; 
-            border: 1px solid #222; 
-            display: flex; 
-            align-items: center; 
-        }
-        .news-scroll { 
-            display: inline-block; 
-            animation: scroll 20s linear infinite; 
-            font-size: 13px; 
-            color: var(--green); 
-        }
-        
+        .news-container { background: #000; padding: 8px; margin: 10px 0; height: 35px; overflow: hidden; white-space: nowrap; border: 1px solid #222; display: flex; align-items: center; }
+        .news-scroll { display: inline-block; animation: scroll 20s linear infinite; font-size: 13px; color: var(--green); }
         @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
         .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
         .data-label { font-size: 8px; color: #555; display: block; }
@@ -107,12 +89,16 @@
                     .then(data => {
                         if (data.price) {
                             document.getElementById(`price-${a.ticket}`).innerText = `R$ ${data.price.toFixed(2)}`;
+                            
                             const dayEl = document.getElementById(`day-${a.ticket}`);
                             dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
                             dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
+                            
                             const perfEl = document.getElementById(`perf-${a.ticket}`);
-                            perfEl.innerText = (data.perf12m >= 0 ? "+" : "") + data.perf12m.toFixed(2) + "%";
-                            perfEl.style.color = data.perf12m >= 0 ? "#00ff41" : "#ff3131";
+                            // Pegando o valor de performance que vem do novo Worker
+                            const val12m = data.perf12m || 0;
+                            perfEl.innerText = (val12m >= 0 ? "+" : "") + val12m.toFixed(2) + "%";
+                            perfEl.style.color = val12m >= 0 ? "#00ff41" : "#ff3131";
                         }
                     })
                     .catch(() => { 
@@ -127,5 +113,6 @@
 
     window.onload = ignition;
 </script>
-</body>
-</html>
+</body
+    >
+    </html>
