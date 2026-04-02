@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
         body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; padding: 10px; }
         header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--green); padding-bottom: 5px; margin-bottom: 15px; font-size: 12px; }
         #painel { display: grid; gap: 10px; }
-        .card { background: var(--card); border-left: 4px solid; padding: 15px; position: relative; overflow: hidden; border-radius: 4px; }
+        .card { background: var(--card); border-left: 4px solid; padding: 15px; position: relative; border-radius: 4px; }
         .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .ticket-name { font-size: 20px; font-weight: bold; }
         .status-pill { font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
@@ -36,10 +36,10 @@
 <div id="painel">
     </div>
 
-<footer id="status-log">SISTEMA INICIANDO...</footer>
+<footer id="status-log">INICIALIZANDO MOTOR...</footer>
 
 <script>
-    // 1. UPDATE THIS URL WITH YOUR WORKER LINK
+    // ⚠️ COLOQUE O LINK DO SEU WORKER ABAIXO
     const motorURL = "https://snowy-paper-bccf.sydney.workers.dev/"; 
 
     function updateClock() {
@@ -57,7 +57,7 @@
             const agentes = await res.json();
             painel.innerHTML = ''; 
 
-            // 2. RENDER CARD STRUCTURE
+            // 1. Monta a estrutura visual dos cards primeiro
             agentes.forEach(a => {
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
                 painel.innerHTML += `
@@ -68,52 +68,18 @@
                         </div>
                         <div class="price">
                             <span class="pulse" style="background-color:${cor}"></span>
-                            <span id="price-${a.ticket}">SYNCING...</span>
+                            <span id="price-${a.ticket}">CONECTANDO...</span>
                         </div>
-                        <div class="label">Context and Triggers</div>
+                        <div class="label">Contexto e Gatilhos</div>
                         <div class="news-container">
-                            <div class="news-scroll">LIVE: ${a.hist_24h} // FOCUS: ${a.gatilhos}</div>
+                            <div class="news-scroll">LIVE: ${a.hist_24h} // FOCO: ${a.gatilhos}</div>
                         </div>
                         <div class="op-grid">
-                            <div><span class="data-label">DAY VARIATION</span><span class="value" id="day-${a.ticket}">0.00%</span></div>
-                            <div><span id="perf-label-${a.ticket}" class="data-label">12 MONTH PERF.</span><span class="value" id="perf-${a.ticket}">0.00%</span></div>
+                            <div><span class="data-label">OSCILAÇÃO DIA</span><span class="value" id="day-${a.ticket}">0.00%</span></div>
+                            <div><span class="data-label">PERF. 12 MESES</span><span class="value" id="perf-${a.ticket}">0.00%</span></div>
                         </div>
                     </div>`;
             });
 
-            // 3. FETCH DATA IN SEQUENCE (350ms DELAY)
-            for (let i = 0; i < agentes.length; i++) {
-                await new Promise(r => setTimeout(r, 350));
-                const a = agentes[i];
-                
-                fetch(`${motorURL}?ticket=${a.ticket}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.price) {
-                            document.getElementById(`price-${a.ticket}`).innerText = `R$ ${data.price.toFixed(2)}`;
-                            
-                            const dayEl = document.getElementById(`day-${a.ticket}`);
-                            dayEl.innerText = (data.changeDay >= 0 ? "+" : "") + data.changeDay.toFixed(2) + "%";
-                            dayEl.style.color = data.changeDay >= 0 ? "#00ff41" : "#ff3131";
-
-                            const perfEl = document.getElementById(`perf-${a.ticket}`);
-                            perfEl.innerText = (data.perf12m >= 0 ? "+" : "") + data.perf12m.toFixed(2) + "%";
-                            perfEl.style.color = data.perf12m >= 0 ? "#00ff41" : "#ff3131";
-                        }
-                    })
-                    .catch(() => { 
-                        document.getElementById(`price-${a.ticket}`).innerText = "OFFLINE"; 
-                    });
-            }
-            log.innerText = `SYSTEM OPERATIONAL: ${agentes.length} AGENTS ACTIVE.`;
-        } catch (e) { 
-            log.innerText = "CRITICAL ERROR: " + e.message; 
-        }
-    }
-
-    window.onload = ignition;
-</script>
-
-</bo
-    dy>
-</html>
+            // 2. Busca os dados um por um com i
+            ntervalo
