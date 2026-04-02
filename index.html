@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V8.8 // FÊNIX PRIME</title>
+    <title>SENTINEL V9.0 // FÊNIX PRIME</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; }
         .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; }
@@ -15,31 +15,33 @@
         .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: #1a1a1a; }
         .label { font-size: 9px; color: #444; text-transform: uppercase; font-weight: bold; margin-top: 10px; border-top: 1px solid #111; padding-top: 5px; }
         .value { font-size: 11px; color: #999; margin-top: 2px; }
-        #status-log { font-family: monospace; color: #222; font-size: 9px; margin-top: 40px; text-align: center; }
+        #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL_V8.8 // MOTOR LIGADO</span>
+    <span>SENTINEL_V9.0 // MOTOR BLINDADO</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card" style="border-color:#333">Aguardando Sincronia...</div>
+    <div class="card" style="border-color:#333">Sincronizando com Cloudflare...</div>
 </div>
 
-<div id="status-log">LOG: Iniciando túnel de dados...</div>
+<div id="status-log">LOG: Ativando túnel snowy-paper-0f66...</div>
 
 <script>
+    // ESTA É A URL DO SEU WORKER QUE VOCÊ CRIOU
+    const motorURL = "https://snowy-paper-0f66.siddney-almeidaa.workers.dev";
+
     async function ignition() {
         const painel = document.getElementById('painel');
         const log = document.getElementById('status-log');
 
         try {
-            // 1. Carrega o seu JSON local (Agentes B3)
             const res = await fetch('sentinel_data.json');
-            if (!res.ok) throw new Error("Erro ao ler sentinel_data.json");
+            if (!res.ok) throw new Error("Erro ao ler JSON local");
             const agentes = await res.json();
             
             painel.innerHTML = ''; 
@@ -48,48 +50,48 @@
                 const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
                 const cardId = `price-${a.ticket}`;
                 
-                // 2. Renderiza a estrutura visual do card
                 painel.innerHTML += `
                     <div class="card" style="border-left-color: ${cor}">
                         <div class="ticket-row">
                             <span class="ticket-name">${a.ticket}</span>
                             <span class="status-pill" style="color: ${cor}; border: 1px solid ${cor}">${a.semaforo}</span>
                         </div>
-                        <div class="price" id="${cardId}">SINC...</div>
+                        <div class="price" id="${cardId}">BUSCANDO...</div>
                         <div class="label">Gatilhos</div>
                         <div class="value">${a.gatilhos}</div>
                         <div class="label">Operacional</div>
                         <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
                     </div>`;
 
-                // 3. Injeta o preço usando o PROXY AllOrigins (Fura o bloqueio CORS)
-                const apiURL = `https://brasilapi.com.br/api/quote/v1/${a.ticket}`;
-                const proxyURL = `https://api.allorigins.win/get?url=${encodeURIComponent(apiURL)}`;
-
-                fetch(proxyURL)
+                // CHAMADA VIA TÚNEL CLOUDFLARE (SEM ERRO API) [cite: 2026-02-28]
+                fetch(`${motorURL}?ticket=${a.ticket}`)
                     .then(r => r.json())
-                    .then(proxyData => {
-                        const data = JSON.parse(proxyData.contents);
+                    .then(data => {
+                        // Verifica se o dado veio da BrazilAPI via Worker [cite: 2026-02-28]
                         const p = data.regularMarketPrice;
-                        document.getElementById(cardId).innerText = p ? `R$ ${p.toFixed(2)}` : "FECHADO";
+                        const el = document.getElementById(cardId);
+                        if (p) {
+                            el.innerText = `R$ ${p.toFixed(2)}`;
+                            el.style.color = "#00ff41";
+                        } else {
+                            el.innerText = "SEM SINAL";
+                        }
                     })
                     .catch(() => {
-                        document.getElementById(cardId).innerText = "ERRO API";
-                        document.getElementById(cardId).style.color = "#ff3131";
+                        const el = document.getElementById(cardId);
+                        el.innerText = "ERRO TÚNEL";
+                        el.style.color = "#ff3131";
                     });
             }
-            log.innerText = "SISTEMA: " + agentes.length + " agentes operando com túnel de dados.";
+            log.innerText = "SISTEMA: " + agentes.length + " agentes operando via Cloudflare Bridge.";
         } catch (err) {
             log.innerText = "ERRO NA IGNIÇÃO: " + err.message;
-            painel.innerHTML = `<div class="card" style="border-color:red">Falha Crítica: ${err.message}</div>`;
         }
     }
 
-    // Relógio em tempo real
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    // Início automático
     setTimeout(ignition, 500);
 </script>
-</body
-    >
+</body>
+    
 </html>
