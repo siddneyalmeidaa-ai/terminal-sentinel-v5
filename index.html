@@ -3,76 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V8.5 // DASHBOARD FINAL</title>
+    <title>SENTINEL V8.6 // FINAL PACT</title>
     <style>
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; }
-        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; }
+        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        .card { background: #0d0d0d; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; }
-        .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .ticket-name { font-size: 16px; font-weight: 800; color: #fff; }
-        .price { font-size: 28px; font-weight: bold; margin: 2px 0; color: #00ff41; }
-        .status-pill { font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 900; background: #1a1a1a; border: 1px solid #444; }
-        .label { font-size: 10px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: 8px; }
-        .value { font-size: 11px; color: #aaa; margin-bottom: 4px; }
-        #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 30px; text-align: center; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; transition: 0.3s; }
+        .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .ticket-name { font-size: 18px; font-weight: 900; color: #fff; }
+        .price { font-size: 32px; font-weight: bold; margin: 5px 0; color: #00ff41; }
+        .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: #1a1a1a; }
+        .label { font-size: 9px; color: #444; text-transform: uppercase; font-weight: bold; margin-top: 10px; border-top: 1px solid #111; padding-top: 5px; }
+        .value { font-size: 11px; color: #999; margin-top: 2px; }
+        #status-log { font-family: monospace; color: #222; font-size: 9px; margin-top: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL_V8.5 // STATUS ATIVO</span>
+    <span>SENTINEL_V8.6 // FÊNIX PRIME</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card" style="border-color:#333">Aguardando Sincronia...</div>
+    <div class="card">Sincronizando dados locais...</div>
 </div>
 
-<div id="status-log">SISTEMA: Conectando...</div>
+<div id="status-log">LOG: Aguardando sinal...</div>
 
 <script>
-    async function rodarSentinel() {
+    async function executarSentinel() {
         const painel = document.getElementById('painel');
         const log = document.getElementById('status-log');
 
         try {
+            // 1. LER O JSON LOCAL PRIMEIRO
             const res = await fetch('sentinel_data.json');
-            if (!res.ok) throw new Error("Erro ao ler JSON local.");
+            if (!res.ok) throw new Error("Falha ao acessar sentinel_data.json");
             const agentes = await res.json();
             
-            painel.innerHTML = ''; 
+            painel.innerHTML = ''; // Limpa o carregamento
 
+            // 2. DESENHAR OS CARDS IMEDIATAMENTE [cite: 2026-02-28]
             for (let a of agentes) {
-                try {
-                    const apiRes = await fetch(`https://brasilapi.com.br/api/quote/v1/${a.ticket}`);
-                    const data = await apiRes.json();
-                    
-                    const preco = data.regularMarketPrice ? `R$ ${data.regularMarketPrice.toFixed(2)}` : "R$ 0,00";
-                    const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
-                    
-                    painel.innerHTML += `
-                        <div class="card" style="border-left-color: ${cor}">
-                            <div class="ticket-row">
-                                <span class="ticket-name">${a.ticket}</span>
-                                <span class="status-pill" style="color: ${cor}; border-color: ${cor}">${a.semaforo}</span>
-                            </div>
-                            <div class="price">${preco}</div>
-                            <div class="label">Gatilhos</div>
-                            <div class="value">${a.gatilhos}</div>
-                            <div class="label">Análise Técnica</div>
-                            <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
-                        </div>`;
-                } catch (e) { console.log("Erro no ticket: " + a.ticket); }
+                const cor = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
+                
+                const cardId = `price-${a.ticket}`;
+                painel.innerHTML += `
+                    <div class="card" style="border-left-color: ${cor}">
+                        <div class="ticket-row">
+                            <span class="ticket-name">${a.ticket}</span>
+                            <span class="status-pill" style="color: ${cor}; border: 1px solid ${cor}">${a.semaforo}</span>
+                        </div>
+                        <div class="price" id="${cardId}">---</div>
+                        
+                        <div class="label">Gatilhos</div>
+                        <div class="value">${a.gatilhos}</div>
+                        
+                        <div class="label">Operacional</div>
+                        <div class="value">Trava: ${a.trava} | Perf: ${a.perf_12m}</div>
+                    </div>`;
+
+                // 3. BUSCAR PREÇO EM SEGUNDO PLANO (Yahoo Finance Bridge) [cite: 2026-02-28]
+                fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${a.ticket}.SA`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const p = data.chart.result[0].meta.regularMarketPrice;
+                        document.getElementById(cardId).innerText = `R$ ${p.toFixed(2)}`;
+                    })
+                    .catch(() => { document.getElementById(cardId).innerText = "OFFLINE"; });
             }
-            log.innerText = "SISTEMA: " + agentes.length + " agentes sincronizados.";
+            log.innerText = "SISTEMA: " + agentes.length + " agentes carregados do JSON.";
         } catch (err) {
-            log.innerText = "ERRO: " + err.message;
+            log.innerText = "ERRO CRÍTICO: " + err.message;
+            painel.innerHTML = `<div class="card" style="border-color:red">Erro ao carregar agentes. Verifique o arquivo JSON.</div>`;
         }
     }
 
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(rodarSentinel, 500);
+    setTimeout(executarSentinel, 500);
 </script>
 </body>
+
 </html>
