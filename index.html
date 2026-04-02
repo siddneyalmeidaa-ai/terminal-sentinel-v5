@@ -3,85 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL V8.3 // FULL INTEGRATION</title>
+    <title>SENTINEL V8.4 // DASHBOARD B3</title>
     <style>
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
-        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; border-radius: 12px; border-left: 6px solid #333; position: relative; }
-        .ticket { font-size: 14px; color: #fff; font-weight: bold; letter-spacing: 1px; }
-        .price { font-size: 32px; font-weight: bold; margin: 5px 0; color: #00ff41; }
-        .info { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.4; }
-        .badge { position: absolute; top: 15px; right: 15px; font-size: 9px; padding: 3px 6px; border-radius: 4px; background: #222; color: #888; }
-        #status-log { font-family: monospace; color: #444; font-size: 10px; margin-top: 40px; text-align: center; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 10px; margin: 0; }
+        .header { border-bottom: 2px solid #00ff41; padding: 10px 0; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .card { background: #0d0d0d; border: 1px solid #1a1a1a; padding: 15px; border-radius: 10px; border-left: 5px solid #333; position: relative; overflow: hidden; }
+        .ticket-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .ticket-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+        .price { font-size: 28px; font-weight: bold; margin: 2px 0; color: #00ff41; }
+        .status-pill { font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 900; background: #1a1a1a; }
+        .label { font-size: 10px; color: #555; text-transform: uppercase; font-weight: bold; margin-top: 8px; }
+        .value { font-size: 11px; color: #aaa; margin-bottom: 4px; }
+        #status-log { font-family: monospace; color: #333; font-size: 9px; margin-top: 30px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>SENTINEL_V8.3 // AGENTES B3</span>
+    <span>SENTINEL_V8.4 // OPERAÇÃO ATIVA</span>
     <span id="timer">00:00:00</span>
 </div>
 
 <div id="painel" class="grid">
-    <div class="card">Sincronizando sentinel_data.json...</div>
+    <div class="card">Iniciando renderização de cards...</div>
 </div>
 
-<div id="status-log">SISTEMA: Iniciando varredura no repositório...</div>
+<div id="status-log">SISTEMA: Sincronia estável.</div>
 
 <script>
-    async function sincronizarSentinela() {
+    async function renderizarCards() {
         const painel = document.getElementById('painel');
         const log = document.getElementById('status-log');
 
         try {
-            log.innerText = "SISTEMA: Lendo arquivo sentinel_data.json...";
-            
-            // BUSCA O ARQUIVO REAL
             const res = await fetch('sentinel_data.json');
-            
-            if (!res.ok) throw new Error("Arquivo sentinel_data.json não encontrado no servidor.");
-            
             const agentes = await res.json();
             painel.innerHTML = ''; 
 
             for (let a of agentes) {
                 try {
-                    // Consulta BrazilAPI [cite: 2026-02-28]
                     const apiRes = await fetch(`https://brasilapi.com.br/api/quote/v1/${a.ticket}`);
                     const data = await apiRes.json();
                     
-                    const preco = data.regularMarketPrice ? `R$ ${data.regularMarketPrice.toFixed(2)}` : "---";
-                    const variação = data.regularMarketChangePercent ? `${data.regularMarketChangePercent.toFixed(2)}%` : "0.00%";
-                    const corSemaforo = a.semaforo === "ENTRA" ? "#00ff41" : "#ff3131";
-
+                    const preco = data.regularMarketPrice ? `R$ ${data.regularMarketPrice.toFixed(2)}` : "PENDENTE";
+                    const corSemaforo = a.semaforo === "ENTRA" ? "#00ff41" : (a.semaforo === "PULA" ? "#ffaa00" : "#ff3131");
+                    
                     painel.innerHTML += `
                         <div class="card" style="border-left-color: ${corSemaforo}">
-                            <div class="badge">${a.semaforo}</div>
-                            <div class="ticket">${a.ticket}</div>
+                            <div class="ticket-row">
+                                <span class="ticket-name">${a.ticket}</span>
+                                <span class="status-pill" style="color: ${corSemaforo}; border: 1px solid ${corSemaforo}">${a.semaforo}</span>
+                            </div>
                             <div class="price">${preco}</div>
-                            <div class="info" style="color:#00ff41">Variação: ${variação}</div>
-                            <div class="info"><b>Gatilhos:</b> ${a.gatilhos}</div>
-                            <div class="info"><b>Trava:</b> ${a.trava} | <b>Hist 24h:</b> ${a.hist_24h}</div>
+                            
+                            <div class="label">Gatilhos / Tese</div>
+                            <div class="value">${a.gatilhos}</div>
+                            
+                            <div class="label">Análise Técnica</div>
+                            <div class="value">Trava: ${a.trava} | Perf. 12m: ${a.perf_12m}</div>
+                            
+                            <div class="label">Histórico 24h</div>
+                            <div class="value" style="font-style: italic;">${a.hist_24h}</div>
                         </div>
                     `;
-                } catch (err) {
-                    console.error("Erro no ticker " + a.ticket);
-                }
+                } catch (err) { console.error(err); }
             }
-            log.innerText = "SISTEMA: Todos os agentes sincronizados com sucesso.";
+            log.innerText = "SISTEMA: " + agentes.length + " agentes operando em tempo real.";
         } catch (e) {
-            painel.innerHTML = `<div class="card" style="border-color:red; border-left-color:red">
-                <b>ERRO CRÍTICO DE SINCRONIA</b><br>
-                O arquivo 'sentinel_data.json' não foi lido corretamente.
-            </div>`;
-            log.innerText = "DETALHE: " + e.message;
+            log.innerText = "ERRO: " + e.message;
         }
     }
 
     setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
-    setTimeout(sincronizarSentinela, 1000);
+    setTimeout(renderizarCards, 500);
 </script>
 </body>
-
-</html>
+<
+    /html>
